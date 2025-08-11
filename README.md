@@ -14,6 +14,15 @@ In order to clone the repository paste the below given link in your github
 https://github.com/izack05/UnifyU_project_Group07.git 
 ```
 
+or
+
+- open your desired folder and run the below commands in cmd of that folder
+```sh
+git clone https://github.com/izack05/UnifyU_project_Group07
+cd UnifyU_project_Group07
+code .
+```
+
 - now open a terminal in github by pressing 
 ```sh
 for windows --> ctrl + shift + ``
