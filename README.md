@@ -17,7 +17,7 @@
 
 In order to clone the repository paste the below given link in your github
 ```sh
-repo_link
+https://github.com/izack05/UnifyU_project_Group07.git 
 ```
 
 >now open a terminal in github by pressing 
