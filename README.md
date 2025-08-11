@@ -1,11 +1,5 @@
 <h1 
-    color= white;
-    font-family= Arial, sans-serif;
-    font-size= 48px;
-    text-decoration= underline;
-    font-weight= normal;
-    align= center;
-">
+    align = "center">
     UnifyU
 </h1>
 
