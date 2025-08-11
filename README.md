@@ -22,7 +22,6 @@ for mac --> control + `
 1. create a virtual environment
 2. activate the virtual environment
 3. install the required libraries for the project
-4. 
 
 (copy and paste each command one by one)
 
@@ -40,7 +39,7 @@ source env/bin/activate
 pip install -r requirements.txt
 ```
 
-> afterwards, in your project folder scope create a new file names sk.py and set a variable secret_key = "what i provide in discord"
+- afterwards, in your project folder scope create a new file names sk.py and set a variable secret_key = "what i provide in discord"
 ---
 
 # Running the project
