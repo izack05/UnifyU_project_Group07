@@ -14,11 +14,13 @@ In order to clone the repository paste the below given link in your github
 https://github.com/izack05/UnifyU_project_Group07.git 
 ```
 
->now open a terminal in github by pressing 
-for windows --> ctrl + shift + `
-for mac --> control + `
+- now open a terminal in github by pressing 
+```sh
+for windows --> ctrl + shift + ``
+for mac --> control +  ``
+```
 
->in the cmd/terminal type the below commands in order to:
+- in the cmd/terminal type the below commands in order to:
 1. create a virtual environment
 2. activate the virtual environment
 3. install the required libraries for the project
