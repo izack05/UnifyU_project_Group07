@@ -1,0 +1,528 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', Helvetica, sans-serif;
+    background-color: white;
+    width: 100vw;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* Main Container */
+.main-container {
+    background-color: white;
+    display: grid;
+    justify-items: center;
+    align-items: start;
+    width: 100vw;
+    min-height: 100vh;
+}
+
+.content-wrapper {
+    background-color: white;
+    overflow: hidden;
+    width: 1280px;
+    height: 720px;
+    position: relative;
+}
+
+/* Header Styles */
+.header {
+    position: absolute;
+    width: 1283px;
+    height: 236px;
+    top: 0;
+    left: -3px;
+}
+
+/* Navbar Styles */
+.navbar {
+    position: absolute;
+    width: 1280px;
+    height: 59px;
+    top: 0;
+    left: 3px;
+    background-image: url('/navbar.svg');
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.logo {
+    position: absolute;
+    width: 83px;
+    top: 14px;
+    left: 21px;
+    font-family: 'Inter', Helvetica;
+    font-weight: 200;
+    color: black;
+    font-size: 24px;
+    line-height: normal;
+}
+
+/* Navigation Buttons */
+.nav-btn {
+    position: absolute;
+    height: 28px;
+    top: 11px;
+    background-color: #bfbaba;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    padding: 5px 14px;
+    font-family: 'Microsoft Sans Serif', Helvetica;
+    font-weight: normal;
+    color: black;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.nav-btn:hover {
+    background-color: #a8a8a8;
+}
+
+.nav-home { left: 855px; }
+.nav-about { left: 945px; }
+.nav-balance { left: 1034px; }
+.nav-profile { left: 1139px; }
+
+/* Welcome Banner */
+.welcome-banner {
+    position: absolute;
+    width: 1280px;
+    height: 65px;
+    top: 59px;
+    left: 3px;
+    background-color: #686e9f;
+}
+
+.welcome-title {
+    position: absolute;
+    width: 435px;
+    top: -21px;
+    left: 422px;
+    font-family: 'Inknut Antiqua', Helvetica;
+    font-weight: normal;
+    color: black;
+    font-size: 40px;
+    line-height: normal;
+}
+
+/* Services Header */
+.services-header {
+    position: relative;
+    width: 1279px;
+    height: 112px;
+    top: 124px;
+    left: 3px;
+    background-color: #a7a1bd;
+}
+
+.separator-top {
+    position: absolute;
+    top: 40px;
+    left: -3px;
+    width: 1283px;
+    height: 2px;
+    background-color: #000;
+}
+
+.separator-bottom {
+    position: absolute;
+    top: 70px;
+    left: -3px;
+    width: 1283px;
+    height: 2px;
+    background-color: #000;
+}
+
+.services-btn {
+    position: absolute;
+    top: 22px;
+    left: 449px;
+    padding: 17px 49px;
+    background-color: #b19b9b;
+    border: 6px solid #a82a2a;
+    border-radius: 10px;
+    font-family: 'Anonymous Pro', Helvetica;
+    font-weight: bold;
+    color: black;
+    font-size: 31px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.services-btn:hover {
+    background-color: #9d8787;
+}
+
+/* Services Container */
+.services-container {
+    position: absolute;
+    width: 1280px;
+    height: 441px;
+    top: 279px;
+    left: 0;
+    overflow-y: scroll;
+}
+
+.services-content {
+    position: relative;
+    width: 1280px;
+    height: 751px;
+}
+
+/* Service Cards */
+.service-card {
+    position: absolute;
+    width: 566px;
+    height: 287px;
+    background-color: #d9d9d9;
+    border-radius: 20px;
+}
+
+.canteen-card {
+    top: 0;
+    left: 32px;
+}
+
+.club-card {
+    top: 0;
+    left: 678px;
+}
+
+.library-card {
+    top: 323px;
+    left: 32px;
+}
+
+.issues-card {
+    top: 323px;
+    left: 679px;
+}
+
+/* Card Icons */
+.card-icon {
+    position: absolute;
+    width: 144px;
+    height: 144px;
+    top: 43px;
+    object-fit: cover;
+}
+
+.canteen-icon {
+    left: 43px;
+    border-radius: 88px;
+}
+
+.club-icon {
+    left: 35px;
+    border-radius: 106.5px;
+}
+
+.library-icon {
+    left: 35px;
+    border-radius: 72px;
+}
+
+.issues-icon {
+    left: 9px;
+    border-radius: 32px;
+    border: 3px solid black;
+}
+
+/* Card Titles */
+.card-title {
+    position: absolute;
+    top: 42px;
+    left: 225px;
+    font-family: 'Crimson Text', Helvetica;
+    font-weight: bold;
+    color: black;
+    font-size: 31px;
+    letter-spacing: 4.34px;
+    line-height: normal;
+    text-decoration: underline;
+}
+
+.issues-title {
+    width: 277px;
+    top: 22px;
+}
+
+/* Card Descriptions */
+.card-description {
+    position: absolute;
+    width: 281px;
+    top: 93px;
+    left: 225px;
+    font-family: 'Pacifico', Helvetica;
+    font-weight: normal;
+    color: black;
+    font-size: 15px;
+    letter-spacing: 2.10px;
+    line-height: normal;
+}
+
+.club-card .card-description {
+    top: 89px;
+}
+
+.library-card .card-description {
+    top: 89px;
+}
+
+.issues-description {
+    width: 300px;
+    top: 105px;
+    left: 222px;
+}
+
+/* Pattern Images - Canteen */
+.pattern-img {
+    position: absolute;
+    top: 220px;
+    height: 48px;
+    object-fit: cover;
+}
+
+.pattern-1 {
+    width: 280px;
+    left: 0;
+}
+
+.pattern-2 {
+    width: 285px;
+    left: 280px;
+}
+
+/* Pattern Images - Club */
+.club-pattern {
+    position: absolute;
+    top: 224px;
+    height: 47px;
+    object-fit: cover;
+}
+
+.club-pattern-1 {
+    width: 158px;
+    left: 0;
+}
+
+.club-pattern-2 {
+    width: 158px;
+    left: 158px;
+}
+
+.club-pattern-3 {
+    width: 158px;
+    left: 317px;
+}
+
+.club-pattern-4 {
+    width: 92px;
+    left: 475px;
+}
+
+/* Pattern Images - Library */
+.library-pattern {
+    position: absolute;
+    top: 224px;
+    height: 48px;
+    object-fit: cover;
+}
+
+.library-pattern-1 {
+    width: 145px;
+    left: 0;
+}
+
+.library-pattern-2 {
+    width: 145px;
+    left: 145px;
+}
+
+.library-pattern-3 {
+    width: 145px;
+    left: 290px;
+}
+
+.library-pattern-4 {
+    width: 131px;
+    left: 435px;
+}
+
+/* Pattern Images - Issues */
+.issues-pattern {
+    position: absolute;
+    top: 232px;
+    height: 40px;
+    object-fit: cover;
+}
+
+.issues-pattern-1 {
+    width: 105px;
+    left: 0;
+}
+
+.issues-pattern-2 {
+    width: 105px;
+    left: 105px;
+}
+
+.issues-pattern-3 {
+    width: 105px;
+    left: 210px;
+}
+
+.issues-pattern-4 {
+    width: 105px;
+    left: 315px;
+}
+
+.issues-pattern-5 {
+    width: 105px;
+    left: 420px;
+}
+
+.issues-pattern-6 {
+    width: 41px;
+    left: 525px;
+}
+
+/* Footer */
+.footer {
+    position: absolute;
+    width: 1280px;
+    height: 65px;
+    top: 686px;
+    left: 0;
+    background-color: #686e9f;
+}
+
+.footer-dev {
+    position: absolute;
+    width: 253px;
+    top: 17px;
+    left: 19px;
+    font-family: 'Inter', Helvetica;
+    font-weight: normal;
+    color: white;
+    font-size: 15px;
+    letter-spacing: 2.10px;
+    line-height: normal;
+}
+
+.footer-copyright {
+    position: absolute;
+    width: 304px;
+    top: 18px;
+    left: 488px;
+    font-family: 'Inter', Helvetica;
+    font-weight: normal;
+    color: white;
+    font-size: 15px;
+    letter-spacing: 2.10px;
+    line-height: normal;
+}
+
+.footer-image {
+    position: absolute;
+    width: 37px;
+    height: 37px;
+    top: 14px;
+    left: 1227px;
+    border-radius: 360px;
+    object-fit: cover;
+}
+
+/* Responsive Design */
+@media (max-width: 1280px) {
+    .content-wrapper {
+        width: 100%;
+        max-width: 1280px;
+    }
+    
+    .header {
+        width: 100%;
+    }
+    
+    .navbar {
+        width: 100%;
+    }
+    
+    .welcome-banner {
+        width: 100%;
+    }
+    
+    .services-header {
+        width: 100%;
+    }
+    
+    .services-container {
+        width: 100%;
+    }
+    
+    .services-content {
+        width: 100%;
+    }
+    
+    .footer {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .content-wrapper {
+        height: auto;
+    }
+    
+    .service-card {
+        width: 90%;
+        margin: 10px auto;
+        position: relative;
+        top: auto !important;
+        left: auto !important;
+    }
+    
+    .canteen-card {
+        margin-bottom: 20px;
+    }
+    
+    .club-card {
+        margin-bottom: 20px;
+    }
+    
+    .library-card {
+        margin-bottom: 20px;
+    }
+    
+    .issues-card {
+        margin-bottom: 20px;
+    }
+    
+    .services-content {
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px 0;
+    }
+    
+    .nav-btn {
+        font-size: 14px;
+        padding: 3px 8px;
+    }
+    
+    .welcome-title {
+        font-size: 28px;
+        text-align: center;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+}

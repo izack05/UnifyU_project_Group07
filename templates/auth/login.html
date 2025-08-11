@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title> UnifyU Login </title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg" style="background: linear-gradient(135deg, #686f9f, #686f9f);">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="{{ url_for('login') }}" style="color: #ffffff">UnifyU</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="title">UnifyU Login</div>
+    <div class="content">
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash-messages">
+            {% for category, message in messages %}
+              <p class="{{ category }}">{{ message }}</p>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <form action="/login" method="POST">
+        {{ form.hidden_tag() }}
+        <div class="user-details">
+
+          <!-- Username -->
+          <div class="input-box">
+            <span class="details">Username</span>
+            {{ form.username(class_="") }}
+            {% for error in form.username.errors %}
+              <p class="error">{{ error }}</p>
+            {% endfor %}
+          </div>
+
+          <!-- Password -->
+          <div class="input-box">
+            <span class="details">Password</span>
+            {{ form.password(class="form-control") }}
+            {% for error in form.password.errors %}
+              <p class="error">{{ error }}</p>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <div class="button">
+          {{ form.submit(class_="") }}
+        </div>
+      </form>
+      <p>Not registered?
+            <a href="{{ url_for('registration')}}" style="text-decoration: none;">
+                Create an account
+            </a>
+        </p>
+    </div>
+  </div>
+</body>
+</html>

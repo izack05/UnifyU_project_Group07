@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UnifyU</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style2.css') }}">
+</head>
+<body>
+    {% extends "layout/base.html" %}
+    {% block content %}
+        
+        <h1>Hello Flasky</h1>
+        <img src="{{ url_for('static', filename='images/Library Vector Icon Style.jpeg') }}" alt="flask_logo" width="150">
+
+        <ul>
+            {% for i in array%}
+            <li>{{ i|upper }}</li>
+            {% endfor %}
+
+            {{ array.0 }}
+        </ul>
+
+        <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+    {% endblock %}
+</body>
+</html>

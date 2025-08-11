@@ -1,0 +1,91 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap');
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(to right, #686f9f, #9b59b6);
+  color: #333;
+  margin: 0;
+  padding: 20px;
+}
+
+.container {
+  max-width: 800px;
+  margin: auto;
+  background: #fff;
+  border-radius: 10px;
+  padding: 30px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+h1, h2 {
+  text-align: center;
+  color: #444;
+}
+
+.topup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.topup-form input,
+.topup-form select {
+  padding: 10px;
+  font-size: 1rem;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.topup-form button {
+  padding: 12px;
+  background-color: #9b59b6;
+  color: #fff;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.topup-form button:hover {
+  background-color: #884da0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+table th, table td {
+  padding: 10px;
+  border: 1px solid #ccc;
+  text-align: center;
+}
+
+table th {
+  background-color: #eee;
+}
+
+.flash-messages {
+  margin-bottom: 15px;
+}
+
+.flash {
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.flash.success {
+  background-color: #e6ffe6;
+  color: #006600;
+  border: 1px solid #006600;
+}
+
+.flash.error {
+  background-color: #ffe6e6;
+  color: #b30000;
+  border: 1px solid #b30000;
+}

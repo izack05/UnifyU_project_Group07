@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Balance info-UnifyU</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/balance.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h1>Top-Up Balance</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-messages">
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <form action="/balance_topup" method="POST" class="topup-form">
+      <label for="ID">ID:</label>
+      <input type="text" name="id" required>
+
+      <label for="balance">Amount (BDT):</label>
+      <input type="number" name="balance" step="0.01" required>
+
+      <label for="payment_method">Payment Method:</label>
+      <select name="payment_method" required>
+        <option value="">Select method</option>
+        <option value="Card">Card</option>
+        <option value="Mobile Banking">Mobile Banking</option>
+      </select>
+
+      <button type="submit">Top Up</button>
+    </form>
+
+    <!-- <h2>Top-Up History</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Full Name</th>
+          <th>Amount</th>
+          <th>Payment Method</th>
+          <th>Submitted At</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for entry in history %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ entry.full_name }}</td>
+            <td>{{ entry.balance }}</td>
+            <td>{{ entry.payment_method }}</td>
+            <td>
+            {% if entry.submitted_at %}
+                {{ entry.submitted_at.strftime('%Y-%m-%d %H:%M:%S') }}
+            {% else %}
+                N/A
+            {% endif %}
+            </td>   
+          </tr>
+        {% else %}
+          <tr><td colspan="5">No top-up records found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table> -->
+  </div>
+</body>
+</html>
