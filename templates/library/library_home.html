@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Library & Study Pods</title>
+<style>
+    body {
+        font-family: 'Georgia', serif;
+        background-color: #f9f9f9;
+        margin: 0;
+        padding: 0;
+    }
+
+    .container {
+        max-width: 900px;
+        margin: 50px auto;
+        padding: 20px;
+    }
+
+    h3 {
+        font-weight: normal;
+        margin-bottom: 10px;
+    }
+
+    /* Library Timings + Pods Info Boxes */
+    .timings-box, .pods-box {
+        background-color: #ddd;
+        padding: 15px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        line-height: 1.6;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+
+    .timings-box {
+        max-width: 280px;
+    }
+
+    .pods-title {
+        font-weight: normal;
+        margin-bottom: 8px;
+        border-bottom: 1px solid #000;
+        display: inline-block;
+        padding-bottom: 2px;
+    }
+
+    .pods-box p {
+        margin: 5px 0;
+        font-size: 15px;
+    }
+
+    .pods-box .note {
+        color: red;
+        font-weight: bold;
+    }
+
+    /* Study Pod Schedule Cards */
+    .pods-schedule {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .pod-card {
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        padding: 15px;
+        flex: 1 1 calc(50% - 20px);
+        min-width: 250px;
+    }
+
+    .pod-card h4 {
+        text-align: center;
+        font-weight: normal;
+        margin-bottom: 5px;
+        border-bottom: 1px solid #000;
+        display: inline-block;
+    }
+
+    .schedule-header {
+        background-color: #ccc;
+        padding: 5px 10px;
+        font-weight: bold;
+        display: inline-block;
+        margin: 10px 0;
+    }
+
+    .date {
+        font-weight: bold;
+        margin: 10px 0 5px;
+    }
+
+    .slots-header {
+        background-color: #6b6b9f;
+        color: white;
+        padding: 3px 8px;
+        font-weight: bold;
+        display: inline-block;
+        margin-bottom: 5px;
+    }
+
+    .slots {
+        background-color: #ddd;
+        padding: 8px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        border-radius: 5px;
+    }
+
+    .slot {
+        background-color: #bbb;
+        padding: 5px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        white-space: nowrap;
+        transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+        cursor: pointer;
+    }
+
+    .slot:hover {
+        background-color: #6b6b9f;
+        color: white;
+        transform: scale(1.1);
+        box-shadow: 0 4px 8px rgba(107, 107, 159, 0.6);
+    }
+
+    .book-btn {
+    display: block;
+    width: 150px;
+    margin: 15px auto 0;
+    padding: 10px 0;
+    background-color: #6b6b9f;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    text-align: center;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+    }
+
+    .book-btn:hover {
+    background-color: #57577a;
+    }
+
+    @media (max-width: 500px) {
+        .timings-box {
+            max-width: 100%;
+        }
+        .pods-schedule {
+            flex-direction: column;
+        }
+    }
+</style>
+</head>
+<body>
+{% extends "layout/base.html" %}
+{% block content %}
+
+<div class="container">
+    <!-- Library Timings -->
+    <h3>Library Timings</h3>
+    <div class="timings-box">
+        <div>Sun-Thurs - 9:00am - 10:30pm</div>
+        <div>Friday - 3:00pm - 10:30pm</div>
+        <div>Saturday - 12:00pm - 10:30pm</div>
+    </div>
+
+    <!-- Individual Study Pods -->
+    <h3 class="pods-title">Individual Study Pods</h3>
+    <div class="pods-box">
+        <p><strong>Individual pods</strong> are here for private study session. Student or faculty can focus on their work keenly.</p>
+        <p class="note">** Each study pod can be pre booked for before three days.</p>
+    </div>
+
+    <div class="pods-schedule">
+        <!-- Pod 1 -->
+        <div class="pod-card">
+            <h4>Study Pod 1</h4>
+            <div class="schedule-header">Schedule</div>
+            {% set pod_name = "Individual Pod 1" %}
+            {% for date_str in dates %}
+                <div class="date">{{ date_str }}</div>
+                <div class="slots-header">Available slots</div>
+                <div class="slots">
+                    {% for time in ["9:00 AM", "10:30 AM", "12:00 PM", "1:30 PM", "3:00 PM", "4:30 PM", "6:00 PM"] %}
+                        {% if booked.get((pod_name, date_str)) and time in booked[(pod_name, date_str)] %}
+                            <div class="slot" style="opacity: 0.4; pointer-events: none; cursor: not-allowed;">{{ time }} (Booked)</div>
+                        {% else %}
+                            <div class="slot">{{ time }}</div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endfor %}
+            <a href="{{ url_for('studypod_bookingform') }}" class="book-btn">Book Now</a>
+        </div>
+
+        <!-- Pod 2 -->
+        <div class="pod-card">
+            <h4>Study Pod 2</h4>
+            <div class="schedule-header">Schedule</div>
+            {% set pod_name = "Individual Pod 2" %}
+            {% for date_str in dates %}
+                <div class="date">{{ date_str }}</div>
+                <div class="slots-header">Available slots</div>
+                <div class="slots">
+                    {% for time in ["9:00 AM", "10:30 AM", "12:00 PM", "1:30 PM", "3:00 PM", "4:30 PM", "6:00 PM"] %}
+                        {% if booked.get((pod_name, date_str)) and time in booked[(pod_name, date_str)] %}
+                            <div class="slot" style="opacity: 0.4; pointer-events: none; cursor: not-allowed;">{{ time }} (Booked)</div>
+                        {% else %}
+                            <div class="slot">{{ time }}</div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endfor %}
+            <a href="{{ url_for('studypod_bookingform') }}" class="book-btn">Book Now</a>
+        </div>
+    </div>
+
+    <!-- Group Study Pods -->
+    <h3 class="pods-title">Group Study Pods</h3>
+    <div class="pods-box">
+        <p><strong>Group study pods</strong> are here for a fruitful group study session. Both faculty and students can collaboratively work.</p>
+        <p class="note">** Each study pod can be pre booked for before three days.</p>
+    </div>
+
+    <div class="pods-schedule">
+        <!-- Group Pod 1 -->
+        <div class="pod-card">
+            <h4>Group Pod 1</h4>
+            <div class="schedule-header">Schedule</div>
+            {% set pod_name = "Group Pod 1" %}
+            {% for date_str in dates %}
+                <div class="date">{{ date_str }}</div>
+                <div class="slots-header">Available slots</div>
+                <div class="slots">
+                    {% for time in ["9:00 AM", "10:30 AM", "12:00 PM", "1:30 PM", "3:00 PM", "4:30 PM", "6:00 PM"] %}
+                        {% if booked.get((pod_name, date_str)) and time in booked[(pod_name, date_str)] %}
+                            <div class="slot" style="opacity: 0.4; pointer-events: none; cursor: not-allowed;">{{ time }} (Booked)</div>
+                        {% else %}
+                            <div class="slot">{{ time }}</div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endfor %}
+            <a href="{{ url_for('studypod_bookingform') }}" class="book-btn">Book Now</a>
+        </div>
+
+        <!-- Group Pod 2 -->
+        <div class="pod-card">
+            <h4>Group Pod 2</h4>
+            <div class="schedule-header">Schedule</div>
+            {% set pod_name = "Group Pod 2" %}
+            {% for date_str in dates %}
+                <div class="date">{{ date_str }}</div>
+                <div class="slots-header">Available slots</div>
+                <div class="slots">
+                    {% for time in ["9:00 AM", "10:30 AM", "12:00 PM", "1:30 PM", "3:00 PM", "4:30 PM", "6:00 PM"] %}
+                        {% if booked.get((pod_name, date_str)) and time in booked[(pod_name, date_str)] %}
+                            <div class="slot" style="opacity: 0.4; pointer-events: none; cursor: not-allowed;">{{ time }} (Booked)</div>
+                        {% else %}
+                            <div class="slot">{{ time }}</div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endfor %}
+            <a href="{{ url_for('studypod_bookingform') }}" class="book-btn">Book Now</a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+
+
+
+</body>
+</html>
+
