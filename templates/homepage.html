@@ -62,7 +62,7 @@
                     </div>
 
                     <!-- Technical Issues Card -->
-                    <div class="service-card issues-card">
+                    <div class="service-card issues-card" onclick="location.href='{{ url_for('view_issues') }}'" style="cursor: pointer;">
                         <img class="card-icon issues-icon" src="static\images\issuesLog.JPG" alt="Issues log icon">
                         <h2 class="card-title issues-title">Log Technical Issues</h2>
                         <p class="card-description issues-description">Log in different sorts of technical issues that you might detect in your campus! The technicians will resolve them</p>

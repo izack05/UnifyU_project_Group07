@@ -11,7 +11,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timezone
 from decimal import Decimal
 
-from forms import LoginForm
+from forms import LoginForm, IssueLogForm
 
 # A flask instance
 app = Flask(__name__)
@@ -80,6 +80,22 @@ def load_user(user_id):
 
 
 #---------Nur classess------------------
+class IssueLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('student_registration.id'), nullable=False)
+    issue_title = db.Column(db.String(200), nullable=False)
+    issue_category = db.Column(db.String(50), nullable=False)  # Lab Computer, Network, Facilities, Other
+    issue_description = db.Column(db.Text, nullable=False)
+    location = db.Column(db.String(100), nullable=False)  # Building/Room location
+    priority = db.Column(db.String(20), nullable=False, default='Medium')  # Low, Medium, High, Critical
+    status = db.Column(db.String(20), nullable=False, default='Open')  # Open, In Progress, Resolved, Closed
+    submitted_at = db.Column(db.DateTime, nullable=False, default=datetime.now)
+    resolved_at = db.Column(db.DateTime, nullable=True)
+    staff_notes = db.Column(db.Text, nullable=True)
+    
+    # Relationship to student
+    student = db.relationship('StudentRegistration', backref=db.backref('issues', lazy=True))
+
 
 
 
@@ -234,6 +250,50 @@ def iunauthorized_error(e):
 
 
 #---------------Nur Routes---------------------
+
+# Route to display issue logging form and list user's issues
+@app.route('/issues')
+@login_required
+def view_issues():
+    # Get all issues for the current user
+    user_issues = IssueLog.query.filter_by(student_id=current_user.id).order_by(IssueLog.submitted_at.desc()).all()
+    return render_template('issues/view_issues.html', issues=user_issues)
+
+# Route to create new issue
+@app.route('/log_issue', methods=['GET', 'POST'])
+@login_required
+def log_issue():
+    form = IssueLogForm()
+    if form.validate_on_submit():
+        new_issue = IssueLog(
+            student_id=current_user.id,
+            issue_title=form.issue_title.data,
+            issue_category=form.issue_category.data,
+            issue_description=form.issue_description.data,
+            location=form.location.data,
+            priority=form.priority.data
+        )
+        db.session.add(new_issue)
+        db.session.commit()
+        
+        flash('Issue logged successfully! Our technical team will review it shortly.', 'success')
+        return redirect(url_for('view_issues'))
+    
+    return render_template('issues/log_issue.html', form=form)
+
+# Route to view individual issue details
+@app.route('/issue/<int:issue_id>')
+@login_required
+def view_issue_detail(issue_id):
+    issue = IssueLog.query.get_or_404(issue_id)
+    
+    # Ensure the user can only view their own issues
+    if issue.student_id != current_user.id:
+        flash('You can only view your own issues.', 'error')
+        return redirect(url_for('view_issues'))
+    
+    return render_template('issues/issue_detail.html', issue=issue)
+
 
 
 
