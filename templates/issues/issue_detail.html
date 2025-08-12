@@ -1,0 +1,195 @@
+{% extends "layout/base.html" %}
+{% block content %}
+
+<div class="container issue-detail-container">
+    <div class="title">
+        <i class="fas fa-eye"></i>
+        Issue Details
+    </div>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <p class="{{ category }}">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="content">
+        <div class="issue-detail-card">
+            <div class="issue-header">
+                <div class="issue-title">{{ issue.issue_title }}</div>
+                <span class="status-badge status-{{ issue.status.lower().replace(' ', '-') }}">
+                    {{ issue.status }}
+                </span>
+            </div>
+            
+            <div class="issue-meta">
+                <div class="meta-item">
+                    <span class="meta-label">Issue ID</span>
+                    <span class="meta-value">#{{ issue.id }}</span>
+                </div>
+                
+                <div class="meta-item">
+                    <span class="meta-label">Category</span>
+                    <span class="meta-value">{{ issue.issue_category }}</span>
+                </div>
+                
+                <div class="meta-item">
+                    <span class="meta-label">Priority</span>
+                    <span class="meta-value priority-{{ issue.priority.lower() }}">{{ issue.priority }}</span>
+                </div>
+                
+                <div class="meta-item">
+                    <span class="meta-label">Location</span>
+                    <span class="meta-value">{{ issue.location }}</span>
+                </div>
+                
+                <div class="meta-item">
+                    <span class="meta-label">Submitted</span>
+                    <span class="meta-value">{{ issue.submitted_at.strftime('%Y-%m-%d at %H:%M') }}</span>
+                </div>
+                
+                {% if issue.resolved_at %}
+                <div class="meta-item">
+                    <span class="meta-label">Resolved</span>
+                    <span class="meta-value">{{ issue.resolved_at.strftime('%Y-%m-%d at %H:%M') }}</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="description-section">
+                <h3 class="section-title">Problem Description</h3>
+                <div class="description-text">
+                    {{ issue.issue_description }}
+                </div>
+            </div>
+            
+            {% if issue.staff_notes %}
+            <div class="description-section">
+                <h3 class="section-title">Staff Notes</h3>
+                <div class="staff-notes">
+                    <strong>Technical Team Response:</strong><br>
+                    {{ issue.staff_notes }}
+                </div>
+            </div>
+            {% else %}
+                {% if issue.status == 'Open' %}
+                <div class="description-section">
+                    <div class="staff-notes">
+                        <i class="fas fa-clock"></i>
+                        <strong>Status:</strong> Your issue has been submitted and is waiting for technical team review. You will be notified once there's an update.
+                    </div>
+                </div>
+                {% endif %}
+            {% endif %}
+        </div>
+        
+        <a href="{{ url_for('view_issues') }}" class="back-btn">
+            <i class="fas fa-arrow-left"></i> Back to My Issues
+        </a>
+    </div>
+</div>
+
+<style>
+    .issue-detail-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    .issue-detail-card {
+        background: #f8f9fa;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 30px;
+        margin-bottom: 20px;
+    }
+    .issue-header {
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 20px;
+        margin-bottom: 20px;
+    }
+    .issue-title {
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+    }
+    .issue-meta {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    .meta-item {
+        display: flex;
+        flex-direction: column;
+    }
+    .meta-label {
+        font-weight: bold;
+        color: #666;
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+    .meta-value {
+        color: #333;
+        font-size: 16px;
+    }
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: bold;
+        text-transform: uppercase;
+        display: inline-block;
+    }
+    .status-open { background: #fff3cd; color: #856404; }
+    .status-in-progress { background: #cce5ff; color: #0056b3; }
+    .status-resolved { background: #d4edda; color: #155724; }
+    .status-closed { background: #e2e3e5; color: #6c757d; }
+    .priority-low { color: #28a745; font-weight: bold; }
+    .priority-medium { color: #ffc107; font-weight: bold; }
+    .priority-high { color: #fd7e14; font-weight: bold; }
+    .priority-critical { color: #dc3545; font-weight: bold; }
+    .description-section {
+        margin: 20px 0;
+    }
+    .section-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 5px;
+    }
+    .description-text {
+        background: white;
+        padding: 15px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+        line-height: 1.6;
+    }
+    .staff-notes {
+        background: #e8f4f8;
+        padding: 15px;
+        border-radius: 5px;
+        border-left: 4px solid #007bff;
+    }
+    .back-btn {
+        background: #6c757d;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        text-decoration: none;
+        display: inline-block;
+        margin-top: 20px;
+    }
+    .back-btn:hover {
+        background: #5a6268;
+        color: white;
+        text-decoration: none;
+    }
+</style>
+
+{% endblock %}
