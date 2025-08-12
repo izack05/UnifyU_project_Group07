@@ -16,7 +16,7 @@
     </style>
 </head>
 <body>
-<nav class="navbar navbar-expand-lg" style="background-color: #4d89b4;">
+<nav class="navbar navbar-expand-lg" style="background-color: #1f65dc;">
   <div class="container-fluid">
     <a class="navbar-brand" href="{{ url_for('homepage') }}" style="color: #ffffff; text-decoration: underline !important;"">UnifyU</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,7 +44,7 @@
             Profile
           </a>
           <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="#">View Profile</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('userprofile') }}">View Profile</a></li>
             <li><a class="dropdown-item" href="{{ url_for('view_issues') }}">My Issues</a></li>
             <li><a class="dropdown-item" href="#">Settings</a></li>
             <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>

@@ -190,6 +190,10 @@ def logout():
     flash("You have been logged out", "success")
     return redirect('/login')
 
+@app.route('/userprofile')
+@login_required
+def userprofile():
+    return render_template("profiles/UserProfile.html")
 # @app.route("/user/<username>/<age>")   # this is a dynamic route --> you can pass anything at <username>
 # def show_username(username, age):
 #     return render_template('user.html', name=username, age = age)
@@ -202,8 +206,6 @@ def logout():
 @app.route('/homepage')
 @login_required
 def homepage():
-    
-    # return render_template('home.html')
     return render_template('homepage.html')
 
 @app.route('/registration')

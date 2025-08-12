@@ -34,44 +34,52 @@
                 <div class="services-content">
                     <!-- Canteen Card -->
                     <div class="service-card canteen-card">
-                        <img class="card-icon canteen-icon" src="static\images\Food Icon Png.jpeg" alt="Food icon">
-                        <h2 class="card-title">Canteen and Co.</h2>
-                        <p class="card-description">Pre-order/buy delicious and budget friendly snacks in a click of a few buttons!</p>
-                        
-                        <!-- Pattern Images -->
-                        <div class="pattern-decoration canteen-pattern"></div>
+                        <a href="#" style="text-decoration: none; color: inherit;">
+                            <img class="card-icon canteen-icon" src="static\images\Food Icon Png.jpeg" alt="Food icon">
+                            <h2 class="card-title">Canteen and Co.</h2>
+                            <p class="card-description">Pre-order/buy delicious and budget friendly snacks in a click of a few buttons!</p>
+                            
+                            <!-- Pattern Images -->
+                            <div class="pattern-decoration canteen-pattern"></div>
+                        </a>
                     </div>
 
                     <!-- Club Portal Card -->
                     <div class="service-card club-card">
-                        <img class="card-icon club-icon" src="static\images\Extracurricular activities icon.JPG" alt="Club icon">
-                        <h2 class="card-title">Club Portal</h2>
-                        <p class="card-description">Broaden your horizon by joining various clubs the university has to offer. Explore, apply, join and flourish!</p>
-                        
-                        <!-- Pattern Images -->
-                        <div class="pattern-decoration club-pattern"></div>
+                        <a href="{{ url_for('homeclub') }}" style="text-decoration: none; color: inherit;">
+                            <img class="card-icon club-icon" src="static\images\Extracurricular activities icon.JPG" alt="Club icon">
+                            <h2 class="card-title">Club Portal</h2>
+                            <p class="card-description">Broaden your horizon by joining various clubs the university has to offer. Explore, apply, join and flourish!</p>
+                            
+                            <!-- Pattern Images -->
+                            <div class="pattern-decoration club-pattern"></div>
+                        </a>
                     </div>
 
                     <!-- Library Service Card -->
                     <div class="service-card library-card">
-                        <img class="card-icon library-icon" src="static\images\Library Vector Icon Style.jpeg" alt="Library icon">
-                        <h2 class="card-title">Library Service</h2>
-                        <p class="card-description">Issue books and memberships!<br>Book/reserve study pods!<br>View Library hours!</p>
-                        
-                        <!-- Pattern Images -->
-                        <div class="pattern-decoration library-pattern"></div>
+                        <a href="#" style="text-decoration: none; color: inherit;">
+                            <img class="card-icon library-icon" src="static\images\Library Vector Icon Style.jpeg" alt="Library icon">
+                            <h2 class="card-title">Library Service</h2>
+                            <p class="card-description">Issue books and memberships!<br>Book/reserve study pods!<br>View Library hours!</p>
+                            
+                            <!-- Pattern Images -->
+                            <div class="pattern-decoration library-pattern"></div>
+                        </a>
                     </div>
 
                     <!-- Technical Issues Card -->
-                    <div class="service-card issues-card" onclick="location.href='{{ url_for('view_issues') }}'" style="cursor: pointer;">
-                        <img class="card-icon issues-icon" src="static\images\issuesLog.JPG" alt="Issues log icon">
-                        <h2 class="card-title issues-title">Log Technical Issues</h2>
-                        <p class="card-description issues-description">Log in different sorts of technical issues that you might detect in your campus! The technicians will resolve them</p>
-                        
-                        <!-- Pattern Images -->
-                        <div class="pattern-decoration issues-pattern"></div>
+                    <div class="service-card issues-card" >
+                        <a href="{{ url_for('view_issues') }}" style="text-decoration: none; color: inherit;">
+                            <img class="card-icon issues-icon" src="static\images\issuesLog.JPG" alt="Issues log icon">
+                            <h2 class="card-title issues-title">Log Technical Issues</h2>
+                            <p class="card-description issues-description">Log in different sorts of technical issues that you might detect in your campus! The technicians will resolve them</p>
+                            
+                            <!-- Pattern Images -->
+                            <div class="pattern-decoration issues-pattern"></div>
+                        </a>
                     </div>
-
+                    
                     
                 </div>
             </div>
