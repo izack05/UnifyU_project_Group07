@@ -196,12 +196,14 @@ def userprofile():
     form = UserForm()
     id = current_user.id
     name_to_update = StudentRegistration.query.get_or_404(id)
+
     if request.method == "POST":
         name_to_update.full_name = request.form['full_name']
         name_to_update.id = request.form['id']
         name_to_update.username = request.form['username']
         name_to_update.email = request.form['email']
         name_to_update.gender = request.form['gender']
+
         try:
             db.session.commit()
             flash("User Info Updated Successfully!", "success")
