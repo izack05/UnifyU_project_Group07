@@ -9,8 +9,8 @@
 
 <div align="center">
 
-| Contributor        | GitHub Profile                                                                                 | Followers                                                                                           |
-|--------------------|------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------|
+| Contributor        | GitHub Profile                                                                                 |
+|--------------------|------------------------------------------------------------------------------------------------|
 | **Isaac Gomes**    | [![Isaac's GitHub](https://img.shields.io/badge/-isaacgomes-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/izack05) |
 | **Sariha Sanjeena**  | [![Sariha's GitHub](https://img.shields.io/badge/-sarihasanjeena-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/s4riha) |
 | **Sanjida Rahman**  | [![Sariha's GitHub](https://img.shields.io/badge/-sanjidarahman-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/SanjidaRahman30) |
