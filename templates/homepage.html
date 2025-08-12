@@ -160,7 +160,7 @@
         <p>Broaden your horizon by joining various university clubs. Explore, apply, join and flourish!</p>
       </div>
 
-      <div class="service-card" onclick="alert('Navigate to Library')">
+      <div class="service-card" onclick="location.href='{{ url_for('library_home') }}'" style="cursor: pointer;"> 
         <img src="static/images/Library Vector Icon Style.jpeg" alt="Library Icon" />
         <h2>Library Service</h2>
         <p>Issue books and memberships, book study pods, and view library hours!</p>

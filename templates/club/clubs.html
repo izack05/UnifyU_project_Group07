@@ -4,12 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Campus Clubs</title>
+  <link rel="icon" type="image/x-icon" href="static\images\UnifyU_logo_finPNG.PNG">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/clubhome.css') }}">
 </head>
 <body>
 {% extends "layout/base.html" %}
 {% block content %}
-
+<div class="content-wrapper">
   <!-- Search Form -->
   <form action="{{ url_for('homeclub') }}" method="get" role="search">
     <input 
@@ -56,6 +57,7 @@
   {% else %}
     <p>No clubs found.</p>
   {% endif %}
+</div>
 {% endblock %} 
 
 </body>
