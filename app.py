@@ -65,7 +65,51 @@ def load_user(user_id):
     return StudentRegistration.query.get(user_id)
 
 
-#----------Sariha classes---------------
+#----------------------------------------------Sariha classes----------------------------------------------------------
+
+class Club(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    logo = db.Column(db.String(200))             
+    bio = db.Column(db.Text)                     
+    rating = db.Column(db.Float, default=0.0)    
+    members = db.Column(db.Integer, default=0) 
+    events = db.relationship('Event', backref='club', lazy=True)
+
+def seed_clubdata():
+    if not Club.query.first():
+        clubs = [
+            Club(name='Computer Club', logo='computer.png', bio='A community for tech enthusiasts to collaborate on projects, participate in hackathons and share a skill space with the like-minded.', rating=4.8, members=450),
+            Club(name='Research Club', logo='research.png', bio='A hub for curious minds to explore innovative ideas, collaborate on research projects, and engage in academic discussions across disciplines.', rating=4.2, members=422),
+            Club(name='Cultural Club', logo='cultural.png', bio='A vibrant space to celebrate diverse traditions, showcase talents through events and performances, and promote cross-cultural understanding.', rating=4.9, members=320),
+            Club(name='Book Club', logo='book.png', bio='A cozy community for bookworms to discover new reads, share insights, and dive into thought-provoking discussions.', rating=4.5, members=200),
+        ]
+        db.session.add_all(clubs)
+        db.session.commit()
+
+class clubapp(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    studid = db.Column(db.Integer, unique=True, nullable=False)
+    email= db.Column(db.String(100), unique=True, nullable=False)
+    phone= db.Column(db.Integer, unique=True, nullable=False)
+    name= db.Column(db.String(500), nullable=False)
+    interests=db.Column(db.String(500), nullable=False)
+    skills=db.Column(db.String(500), nullable=False)
+
+    club_id = db.Column(db.Integer, db.ForeignKey('club.id'), nullable=False) 
+    club = db.relationship('Club', backref='applications')
+
+
+
+class Event(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    club_id = db.Column(db.Integer, db.ForeignKey('club.id'), nullable=False) 
+    event_name = db.Column(db.String(100), nullable=False)
+    event_date = db.Column(db.Date, nullable=False)
+    event_place = db.Column(db.String(100), nullable=False)
+    event_about = db.Column(db.Text, nullable=False)
+
+
 
 
 
@@ -103,6 +147,7 @@ class IssueLog(db.Model):
 #creating database
 with app.app_context():
     db.create_all()
+    seed_clubdata()
 
 
 
@@ -238,6 +283,89 @@ def iunauthorized_error(e):
 
 
 #---------------Sariha Routes-----------------
+
+
+@app.route('/homeclub')
+@login_required
+def homeclub():
+    search_term = request.args.get('q', '').lower() 
+    all_clubs = Club.query.all()
+
+    if search_term:
+        filtered_clubs = [club for club in all_clubs if 
+            search_term in club.name.lower() or
+            (club.bio and search_term in club.bio.lower())
+        ]
+    else:
+        filtered_clubs = all_clubs
+
+    return render_template('club/clubs.html', clubs=filtered_clubs)
+
+
+
+@app.route('/clubs/<int:club_id>')
+@login_required
+def club_detail(club_id):
+    club = Club.query.get_or_404(club_id)
+    return render_template('club/club_detail.html', club=club)
+
+
+
+@app.route('/apply_club/<int:club_id>', methods=['GET'])
+@login_required
+def apply_club_form(club_id):
+    club = Club.query.get_or_404(club_id)
+    return render_template('club/clubform.html', club=club)
+
+
+
+
+
+@app.route('/apply_club/<int:club_id>', methods=['POST'])
+@login_required
+def register_student(club_id):
+    club = Club.query.get_or_404(club_id)
+
+    Student_row = clubapp(
+        name=request.form.get('name'), 
+        studid=request.form.get('studid'), 
+        email=request.form.get("email"), 
+        phone=request.form.get("phone"),
+        interests=request.form.get("interests"),
+        skills=request.form.get("skills")
+    )
+    Student_row.club_id = club.id 
+
+    db.session.add(Student_row)
+    db.session.commit()
+
+    flash(f'Application submitted successfully for {club.name}!', 'success')
+    return redirect(url_for('club_detail', club_id=club.id))
+
+@app.route('/addevent')
+@login_required
+def addevent():
+    return render_template('club/addevent.html')
+
+@app.route('/add-event', methods=['POST'])
+@login_required
+def add_event():
+
+    event_date_str = request.form['event_date']
+    event_date_obj = datetime.strptime(event_date_str, "%Y-%m-%d").date()
+
+    new_event = Event(
+        club_name=request.form.get('club_name'),
+        event_name=request.form.get('event_name'),
+        event_date=event_date_obj,
+        event_place=request.form.get('event_place'),
+        event_about=request.form.get('event_about')
+    )
+
+    db.session.add(new_event)
+    db.session.commit()
+
+    return redirect('/addevent')
 
 
 

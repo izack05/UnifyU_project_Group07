@@ -1,0 +1,103 @@
+
+  body {
+    background-color: #e6e0f8; 
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+  }
+
+  /* Common card style */
+  .card {
+    background: rgb(248, 247, 247);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(131, 119, 119, 0.1);
+  }
+
+  /* Club Info Card */
+  .club-info {
+    height: 200px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  .club-logo {
+    width: 200px;
+    height: 200px;
+    border-radius: 10%;
+    object-fit: cover;
+    background: #ddd;
+  }
+  
+  .club-details {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; 
+    flex-grow: 1;
+  }
+  .club-name {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    font-size: 36px;
+    margin: 0;
+    font-weight: 700;
+    color: #4b0082; 
+  }
+  .club-meta {
+    font-size: 14px;
+    color: #555;
+    margin-top: auto;
+  }
+
+  .apply-btn {
+    background-color: #7b2ff7;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 25px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    align-self: flex-start;
+  }
+  .apply-btn:hover {
+    background-color: #0abcf9;
+  }
+  /* About Card */
+  .about-header {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #4b0082;
+  }
+  .about-text {
+    font-size: 16px;
+    line-height: 1.5;
+    color: #444;
+  }
+
+  /* Events Card */
+  .events-header {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #4b0082;
+  }
+  .event-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+  }
+  .event-item:last-child {
+    border-bottom: none;
+  }
+  .event-name {
+    font-weight: 600;
+    font-size: 16px;
+  }
+  .event-date {
+    font-size: 14px;
+    color: #666;
+  }

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College Club Application Form</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+        
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        nav.navbar {
+            font-size: 25px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            height: 40px;
+            padding: 10px 20px;
+        }
+        body {
+            background: linear-gradient(135deg, #4a00e0, #8e2de2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .form-container {
+            background: #fff;
+            padding: 30px 40px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 500px;
+            animation: fadeIn 0.8s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #4a00e0;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-weight: 500;
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            outline: none;
+            transition: 0.3s;
+            font-size: 14px;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: #8e2de2;
+            box-shadow: 0 0 5px rgba(142, 45, 226, 0.4);
+        }
+
+        textarea {
+            resize: none;
+            min-height: 80px;
+        }
+
+        .form-group-inline {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .form-group-inline .form-group {
+            flex: 1;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #4a00e0, #8e2de2);
+            color: #fff;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            margin-top: 10px;
+            transition: 0.3s;
+        }
+
+        .submit-btn:hover {
+            background: linear-gradient(135deg, #3a00b0, #7d1fd6);
+            transform: translateY(-2px);
+        }
+
+        .note {
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+
+    <nav class="navbar navbar-expand-lg" style="background: linear-gradient(135deg, #4a00e0, #8e2de2);">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('login') }}" style="color: #ffffff">UnifyU</a>
+        </div>
+    </nav>
+
+    <div class="form-container">
+    <h2>Apply to Join {{ club.name }}</h2>
+    <form action="{{ url_for('register_student', club_id=club.id) }}" method="POST">
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" name="name" placeholder="Enter your full name" required>
+            </div>
+            <div class="form-group">
+                <label for="studid">Student ID</label>
+                <input type="number" id="studid" name="studid" placeholder="Enter your student ID" required>
+            </div>
+
+            <div class="form-group-inline">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone</label>
+                    <input type="tel" id="phone" name="phone" placeholder="e.g. 123-456-7890" required>
+                </div>
+            </div>
+
+         <div class="form-group">
+            <label for="interests">Why do you want to join?</label>
+            <textarea id="interests" name="interests" placeholder="Write a brief statement..." required></textarea>
+        </div>
+
+         <div class="form-group">
+            <label for="skills">Skills (if any)</label>
+            <textarea id="skills" name="skills" placeholder="List your skills..." required></textarea>
+        </div>
+
+            <button type="submit" class="submit-btn">Apply Now</button>
+            <p class="note">We’ll review your application and contact you soon.</p>
+        </form>
+    </div>
+
+</body>
+
+
+</html>

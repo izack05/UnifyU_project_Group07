@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Campus Clubs</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/clubhome.css') }}">
+</head>
+<body>
+{% extends "layout/base.html" %}
+{% block content %}
+
+  <!-- Search Form -->
+  <form action="{{ url_for('homeclub') }}" method="get" role="search">
+    <input 
+      type="search" 
+      name="q" 
+      class="search-bar" 
+      placeholder="Search clubs..." 
+      value="{{ request.args.get('q', '') }}" 
+      aria-label="Search clubs"
+    >
+  </form>
+
+  <!-- AI Recommendation Card -->
+  <div class="card-ai">
+    <h2 class="ai-header">AI Recommendations</h2>
+
+    <div class="tags" role="list" style="justify-content: center; margin-bottom: 20px;">
+      <div tabindex="0" class="tag" role="listitem">Technology</div>
+      <div tabindex="0" class="tag" role="listitem">Art</div>
+      <div tabindex="0" class="tag" role="listitem">Book</div>
+      <div tabindex="0" class="tag" role="listitem">Music</div>
+      <div tabindex="0" class="tag" role="listitem">Science</div>
+    </div>
+
+    <p class="ai-description">
+      Discover personalized club suggestions tailored to your interests.
+    </p>
+    
+    <button class="ai-button">Get Recommendations</button>
+  </div>
+
+  <!-- Clubs List -->
+  {% if clubs %}
+    {% for club in clubs %}
+      <a href="{{ url_for('club_detail', club_id=club.id) }}" class="club-card">
+        <img src="{{ url_for('static', filename='logos/' + (club.logo or 'default.png')) }}" alt="{{ club.name }} logo" class="club-logo">
+        <div class="club-info">
+          <h3>{{ club.name }}</h3>
+          <p>{{ club.bio or 'No description available.' }}</p>
+          <p><small>⭐ {{ '%.1f'|format(club.rating or 0) }} | 👥 {{ club.members or 0 }} members</small></p>
+        </div>
+      </a>
+    {% endfor %}
+  {% else %}
+    <p>No clubs found.</p>
+  {% endif %}
+{% endblock %} 
+
+</body>
+</html>
