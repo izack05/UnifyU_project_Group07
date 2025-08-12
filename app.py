@@ -317,7 +317,8 @@ def club_detail(club_id):
 @login_required
 def apply_club_form(club_id):
     club = Club.query.get_or_404(club_id)
-    return render_template('club/clubform.html', club=club)
+    student = StudentRegistration.query.filter_by(id=current_user.id).first_or_404()
+    return render_template('club/clubform.html', club=club, student=student)
 
 
 
@@ -327,11 +328,12 @@ def apply_club_form(club_id):
 @login_required
 def register_student(club_id):
     club = Club.query.get_or_404(club_id)
+    student = StudentRegistration.query.filter_by(id=current_user.id).first_or_404()
 
     Student_row = clubapp(
-        name=request.form.get('name'), 
-        studid=request.form.get('studid'), 
-        email=request.form.get("email"), 
+        name=student.full_name,
+        studid=student.id,
+        email=request.form.get('email'),
         phone=request.form.get("phone"),
         interests=request.form.get("interests"),
         skills=request.form.get("skills")
