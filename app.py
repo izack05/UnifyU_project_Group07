@@ -187,6 +187,7 @@ def login():
 @login_required
 def logout():
     logout_user()
+    flash("You have been logged out", "success")
     return redirect('/login')
 
 # @app.route("/user/<username>/<age>")   # this is a dynamic route --> you can pass anything at <username>
