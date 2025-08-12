@@ -32,7 +32,12 @@ app.secret_key = flask_sk
 
 login_manager = LoginManager()
 login_manager.init_app(app)
-#login_manager.login_view('login')
+login_manager.login_view = 'login'
+login_manager.login_message = "Please login to access this page!"
+@login_manager.unauthorized_handler
+def unauthorized():
+    flash('Please login to access this page!', 'error')
+    return redirect(url_for('login'))
 
 
 #-----------Model Template------------------------------- --> these are tables
