@@ -115,34 +115,20 @@ body {
 }
 
 /* Services Header */
+
 .services-header {
     position: relative;
     width: 100%;
-    height: 112px;
+    height: 140px; /* increased height to accommodate button + separators */
     top: 124px;
     left: 0;
     background: linear-gradient(135deg, #a7a1bd 0%, #9b95b1 100%);
     display: flex;
+    flex-direction: column;  /* stack content vertically */
     align-items: center;
     justify-content: center;
-}
-
-.separator-top {
-    position: absolute;
-    top: 40px;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background: linear-gradient(90deg, transparent 0%, #333 50%, transparent 100%);
-}
-
-.separator-bottom {
-    position: absolute;
-    top: 70px;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background: linear-gradient(90deg, transparent 0%, #333 50%, transparent 100%);
+    padding-top: 20px; /* some padding on top */
+    box-sizing: border-box;
 }
 
 .services-btn {
@@ -157,25 +143,48 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    z-index: 2; /* ensure above separators */
+    margin-bottom: 10px; /* spacing below button */
 }
-
 .services-btn:hover {
     background: linear-gradient(135deg, #9d8787 0%, #8f7979 100%);
     transform: translateY(-2px);
     box-shadow: 0 6px 12px rgba(0,0,0,0.3);
 }
 
-/* Services Container */
+
+.separator-top {
+    position: absolute;
+    top: 80px; /* moved down below button */
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent 0%, #333 50%, transparent 100%);
+    z-index: 1;
+}
+
+.separator-bottom {
+    position: absolute;
+    top: 110px; /* moved down below top separator */
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent 0%, #333 50%, transparent 100%);
+    z-index: 1;
+}
+
+/* Move services container down accordingly */
 .services-container {
     position: absolute;
     width: 100%;
     height: 441px;
-    top: 279px;
+    top: 270px; /* adjusted to below the services header */
     left: 0;
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: #a7a1bd transparent;
 }
+
 
 .services-container::-webkit-scrollbar {
     width: 8px;
