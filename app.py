@@ -338,8 +338,6 @@ def register_student(club_id):
 
     db.session.add(Student_row)
     db.session.commit()
-
-    flash(f'Application submitted successfully for {club.name}!', 'success')
     return redirect(url_for('club_detail', club_id=club.id))
 
 @app.route('/addevent')
