@@ -1,0 +1,137 @@
+
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #f9f9ff, #f0faff);
+      margin: 20px auto;
+      padding: 0 15px 40px;
+    }
+
+    /* Search bar */
+    .search-bar {
+      width: 100%;
+      padding: 10px 20px;
+      border-radius: 25px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      outline: none;
+      margin-bottom: 20px;
+      background-color: #f0f0f0;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+    .search-bar:focus {
+      border-color: #6a5acd;
+      box-shadow: 0 0 5px rgba(106, 90, 205, 0.3);
+      background-color: #e6e6e6;
+    }
+
+    /* Section title */
+    h2 {
+      margin: 15px 0 10px;
+      color: #4b0082;
+      font-weight: bold;
+    }
+
+    /* Recommendation tags */
+    .tags {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 15px;
+      justify-content: flex-start;
+    }
+    .tag {
+      background: #ecc6f8;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      user-select: none;
+    }
+    .tag:hover,
+    .tag:focus {
+      background: linear-gradient(to right, #7b2ff7, #0abcf9);
+      color: white;
+      transform: scale(1.05);
+      outline: none;
+    }
+
+    /* AI Recommendation Card */
+    .card-ai {
+      background-color: #f0f0f0; 
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 700px;
+      margin: 0 auto 25px;
+      text-align: center;
+    }
+    .ai-header {
+      font-size: 1.5rem;
+      color: #333;
+      margin-bottom: 10px;
+    }
+    .ai-description {
+      color: #555;
+      font-size: 1rem;
+      margin-bottom: 15px;
+    }
+    .ai-button {
+      background-color: #888;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s ease;
+    }
+    .ai-button:hover {
+      background-color: #666;
+    }
+
+    /* Club cards as clickable links */
+    a.club-card {
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      background: #bcb7d9;
+      border-radius: 12px;
+      height: 200px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      transition: transform 0.2s ease;
+    }
+    a.club-card:hover,
+    a.club-card:focus {
+      transform: translateY(-3px);
+      outline: none;
+    }
+
+    .club-logo {
+      width: 150px;
+      height: 150px;
+      border-radius: 10%;
+      background: #ddd;
+      object-fit: cover;
+      flex-shrink: 0;
+      transition: transform 0.2s ease;
+    }
+    a.club-card:hover .club-logo {
+      transform: scale(1.05);
+    }
+
+    .club-info h3 {
+      margin: 0;
+      font-size: 18px;
+      color: #333;
+    }
+    .club-info p {
+      margin: 5px 0 0;
+      font-size: 14px;
+      color: #444;
+      max-width: 600px;
+    }

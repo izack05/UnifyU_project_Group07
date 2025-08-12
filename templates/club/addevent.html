@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add New Event</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/addclubevent.css') }}">
+</head>
+<body>
+    {% extends "layout/base.html" %}
+    {% block content %}
+
+  <div class="container">
+    <h2>Add New Event</h2>
+    <form method="post" action="/add-event">
+
+      <label for="club_name">Select Club</label>
+      <select id="club_name" name="club_name" required>
+        <option value="" disabled selected>Select a club</option>
+        <option value="computer club">Computer Club</option>
+        <option value="book club">Book Club</option>
+        <option value="research club">Research Club</option>
+        <option value="adventure club">Adventure Club</option>
+        <option value="cultural club">Cultural Club</option>
+      </select>
+
+      <label for="event_name">Event Name</label>
+      <input type="text" id="event_name" name="event_name" required>
+
+      <label for="event_date">Date</label>
+      <input type="date" id="event_date" name="event_date" required>
+
+      <label for="event_place">Place</label>
+      <input type="text" id="event_place" name="event_place" required>
+
+      <label for="event_about">About the Event</label>
+      <textarea id="event_about" name="event_about" placeholder="Describe the event..." required></textarea>
+
+      <button type="submit" class="submit-btn">Add Event</button>
+    </form>
+  </div>
+{% endblock %} 
+</body>
+</html>
