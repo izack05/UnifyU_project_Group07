@@ -11,7 +11,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timezone
 from decimal import Decimal
 
-from forms import LoginForm, IssueLogForm
+from forms import LoginForm, UserForm, IssueLogForm
 
 # A flask instance
 app = Flask(__name__)
@@ -190,10 +190,31 @@ def logout():
     flash("You have been logged out", "success")
     return redirect('/login')
 
-@app.route('/userprofile')
+@app.route('/userprofile', methods = ['GET', 'POST'])
 @login_required
 def userprofile():
+    form = UserForm()
+    id = current_user.id
+    name_to_update = StudentRegistration.query.get_or_404(id)
+    if request.method == "POST":
+        name_to_update.full_name = request.form['full_name']
+        name_to_update.id = request.form['id']
+        name_to_update.username = request.form['username']
+        name_to_update.email = request.form['email']
+        name_to_update.gender = request.form['gender']
+        try:
+            db.session.commit()
+            flash("User Info Updated Successfully!", "success")
+            return render_template("profiles/UserProfile.html", form=form, name_to_update = name_to_update, id=id)
+        except:
+            flash("Error!  Looks like there was a problem...try again!", "error")
+            return render_template("profiles/UserProfile.html", form=form, name_to_update = name_to_update, id=id)
+    else:
+        return render_template("profiles/UserProfile.html", form=form, name_to_update = name_to_update, id = id)
+    
     return render_template("profiles/UserProfile.html")
+
+
 # @app.route("/user/<username>/<age>")   # this is a dynamic route --> you can pass anything at <username>
 # def show_username(username, age):
 #     return render_template('user.html', name=username, age = age)
