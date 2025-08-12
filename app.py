@@ -9,6 +9,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 #from flask_seasurf import SeaSurf
 
 from datetime import datetime, timezone
+from datetime import datetime, timedelta
+
 from decimal import Decimal
 
 from forms import LoginForm, UserForm, IssueLogForm
@@ -118,6 +120,22 @@ class Event(db.Model):
 
 #---------Sanjida classess--------------
 
+class StudyPodBooking(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    
+    user_id = db.Column(db.Integer, db.ForeignKey('student_registration.id'), nullable=False)
+    
+    fullname = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(250), nullable=False)
+    study_pod = db.Column(db.String(50), nullable=False)
+    date = db.Column(db.Date, nullable=False)
+    time_slot = db.Column(db.String(20), nullable=False)
+    
+    user = db.relationship('StudentRegistration', backref=db.backref('bookings', lazy=True))
+    
+    __table_args__ = (
+        db.UniqueConstraint('study_pod', 'date', 'time_slot', name='unique_pod_booking'),
+    )
 
 
 
@@ -398,8 +416,90 @@ def add_event():
 
 #---------------Sanjida Routes-----------------
 
+@app.route('/library_home')
+@login_required
+def library_home():
+    today = datetime.today().date()
+    dates = [today, today + timedelta(days=1), today + timedelta(days=2)]
 
+    date_strs = [d.strftime('%d/%m/%Y') for d in dates]
 
+    booked_slots = StudyPodBooking.query.filter(
+        StudyPodBooking.study_pod.in_([
+            "Individual Pod 1",
+            "Individual Pod 2",
+            "Group Pod 1",
+            "Group Pod 2"
+        ]),
+        StudyPodBooking.date.in_(dates)
+    ).all()
+
+    booked = {}
+    for b in booked_slots:
+        key = (b.study_pod, b.date.strftime('%d/%m/%Y'))
+        booked.setdefault(key, []).append(b.time_slot)
+
+    return render_template(
+        "library/library_home.html",
+        booked=booked,
+        dates=date_strs
+    )
+
+@app.route('/studypod_bookingform')
+@login_required
+def studypod_bookingform():
+    today = datetime.today()
+    min_date = today.strftime('%Y-%m-%d')
+    max_date = (today + timedelta(days=3)).strftime('%Y-%m-%d')
+    return render_template("library/studypod_bookingform.html", min_date=min_date, max_date=max_date)
+
+@app.route('/book_study_pod', methods=['POST'])
+@login_required
+def studypod_booking():
+    fullname = request.form.get('fullname')
+    email = request.form.get('email')
+    study_pod = request.form.get('study_pod')
+    date_str = request.form.get('date')
+    time_slot = request.form.get('time_slot')
+
+    if not all([fullname, email, study_pod, date_str, time_slot]):
+        flash("Please fill in all the fields.", "error")
+        return redirect(url_for('studypod_bookingform'))
+
+    try:
+        selected_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+    except ValueError:
+        flash("Invalid date format.", "error")
+        return redirect(url_for('studypod_bookingform'))
+
+    today = datetime.today().date()
+    if selected_date < today or selected_date > today + timedelta(days=3):
+        flash("Selected date is out of allowed booking range.", "error")
+        return redirect(url_for('studypod_bookingform'))
+
+    existing_booking = StudyPodBooking.query.filter_by(
+        study_pod=study_pod,
+        date=selected_date,
+        time_slot=time_slot
+    ).first()
+
+    if existing_booking:
+        flash("This study pod is already booked for the selected date and time slot.", "error")
+        return redirect(url_for('studypod_bookingform'))
+
+    booking = StudyPodBooking(
+        user_id=current_user.id,
+        fullname=fullname,
+        email=email,
+        study_pod=study_pod,
+        date=selected_date,
+        time_slot=time_slot
+    )
+    db.session.add(booking)
+    db.session.commit()
+
+    flash("Study Pod booked successfully!", "success")
+    return redirect(url_for('studypod_bookingform'))
 
 
 #---------------Nur Routes---------------------
