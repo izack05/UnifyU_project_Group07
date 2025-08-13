@@ -29,7 +29,7 @@ class IssueLogForm(FlaskForm):
                                 ], 
                                 validators=[DataRequired()])
     issue_description = TextAreaField("Issue Description", validators=[DataRequired()], render_kw={"placeholder": "Describe the issue in detail", "rows": 5})
-    location = StringField("Location", validators=[DataRequired(), Length(max=100)], render_kw={"placeholder": "Building/Room (e.g., UB40101, Library-2nd Floor)"})
+    location = StringField("Location", validators=[DataRequired(), Length(max=100)], render_kw={"placeholder": "Building/Room (e.g., 10G32L, Library-2nd Floor)"})
     priority = SelectField("Priority", 
                           choices=[
                               ('Low', 'Low'),
