@@ -164,6 +164,76 @@ class StudyPodBooking(db.Model):
     )
 
 
+class StudyPodBooking(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    
+    user_id = db.Column(db.Integer, db.ForeignKey('student_registration.id'), nullable=False)
+    
+    fullname = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(250), nullable=False)
+    study_pod = db.Column(db.String(50), nullable=False)
+    date = db.Column(db.Date, nullable=False)
+    time_slot = db.Column(db.String(20), nullable=False)
+    
+    user = db.relationship('StudentRegistration', backref=db.backref('bookings', lazy=True))
+    
+    __table_args__ = (
+        db.UniqueConstraint('study_pod', 'date', 'time_slot', name='unique_pod_booking'),
+    )
+
+
+class FoodItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    stock = db.Column(db.Integer, nullable=False)
+    description = db.Column(db.String(200))
+    image = db.Column(db.String(200))
+    category = db.Column(db.String(50), nullable=False)  # NEW
+
+def seed_fooddata():
+    if not FoodItem.query.first():  # only seed if empty
+        foods = [
+            # Snacks
+            FoodItem(name="Vegetable Shingara", price=10, stock=50,
+                     description="Crispy fried shingara", image="shingara.jpg", category="Snacks"),
+            FoodItem(name="Chicken Samosa", price=10, stock=40,
+                     description="Spicy chicken samosa", image="samosa.jpg", category="Snacks"),
+            FoodItem(name="Chicken Shawarma", price=80, stock=25,
+                     description="Juicy chicken shawarma", image="shawarma.jpg", category="Snacks"),
+            FoodItem(name="Fuchka", price=60, stock=50,
+                     description="Mouthwatering Fuchka", image="fuchka.jpg", category="Snacks"),
+            FoodItem(name="Chicken Burger", price=80, stock=40,
+                     description="Crispy chicken burger", image="chicken_burger.jpg", category="Snacks"),
+            
+            # Rice
+            FoodItem(name="Plain Rice", price=20, stock=100,
+                     description="Steamed plain rice", image="plain_rice.jpg", category="Rice"),
+            FoodItem(name="Fried Rice", price=50, stock=80,
+                     description="Fried rice with vegetables", image="fried_rice.jpg", category="Rice"),
+            FoodItem(name="Khichuri", price=60, stock=70,
+                     description="Traditional khichuri", image="khichuri.jpg", category="Rice"),
+            FoodItem(name="Beef Tehari", price=120, stock=40,
+                     description="Spicy beef tehari", image="beef_tehari.jpg", category="Rice"),
+            FoodItem(name="Chicken Biryani", price=100, stock=50,
+                     description="Delicious chicken biryani", image="chicken_biryani.jpg", category="Rice"),
+
+            # Pasta & Noodles
+            FoodItem(name="Pasta", price=70, stock=40,
+                     description="Creamy pasta", image="pasta.jpg", category="Pasta & Noodles"),
+            FoodItem(name="Chowmein", price=60, stock=60,
+                     description="Stir-fried chowmein", image="chowmein.jpg", category="Pasta & Noodles"),
+
+            # Chicken
+            FoodItem(name="Chicken Curry", price=90, stock=50,
+                     description="Spicy chicken curry", image="chicken_curry.jpg", category="Chicken"),
+            FoodItem(name="Chicken Fry", price=80, stock=40,
+                     description="Crispy chicken fry", image="chicken_fry.jpg", category="Chicken"),
+            FoodItem(name="Chilli Chicken", price=100, stock=30,
+                     description="Hot chilli chicken", image="chilli_chicken.jpg", category="Chicken"),
+        ]
+        db.session.add_all(foods)
+        db.session.commit()
 
 
 
@@ -191,8 +261,9 @@ class IssueLog(db.Model):
 #creating database
 with app.app_context():
     #db.create_all()
-    seed_clubdata()
 
+    seed_clubdata()
+    seed_fooddata()
 
 
 # Route decorators
