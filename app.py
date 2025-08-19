@@ -554,17 +554,37 @@ def register_student(club_id):
 @app.route('/addevent')
 @login_required
 def addevent():
-    return render_template('club/addevent.html')
+    # Fetch all clubs to populate the dropdown
+    clubs = Club.query.all()
+    if not clubs:
+        # Just redirect if no clubs exist
+        return redirect(url_for('homeclub'))
+    return render_template('club/addevent.html', clubs=clubs)
+
 
 @app.route('/add-event', methods=['POST'])
 @login_required
 def add_event():
+    # Get club_id safely
+    club_id_str = request.form.get('club_id')
+    if not club_id_str:
+        return redirect(url_for('addevent'))  # redirect if missing
 
-    event_date_str = request.form['event_date']
-    event_date_obj = datetime.strptime(event_date_str, "%Y-%m-%d").date()
+    try:
+        club_id = int(club_id_str)
+    except ValueError:
+        return redirect(url_for('addevent'))  # redirect if invalid
 
+    # Convert event date string to date object
+    event_date_str = request.form.get('event_date')
+    try:
+        event_date_obj = datetime.strptime(event_date_str, "%Y-%m-%d").date()
+    except (ValueError, TypeError):
+        return redirect(url_for('addevent'))  # redirect if invalid
+
+    # Create new event
     new_event = Event(
-        club_name=request.form.get('club_name'),
+        club_id=club_id,
         event_name=request.form.get('event_name'),
         event_date=event_date_obj,
         event_place=request.form.get('event_place'),
@@ -574,8 +594,7 @@ def add_event():
     db.session.add(new_event)
     db.session.commit()
 
-    return redirect('/addevent')
-
+    return redirect(url_for('club_detail', club_id=club_id))
 
 
 
