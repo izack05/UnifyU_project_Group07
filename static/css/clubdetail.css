@@ -108,3 +108,83 @@
     font-size: 14px;
     color: #666;
   }
+
+  .card.events {
+    margin-top: 30px;
+    padding: 20px;
+    border-radius: 15px;
+    background: #fff;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.events-header {
+    font-size: 24px;
+    font-weight: 700;
+    color: #4a00e0;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 5px;
+}
+
+.event-item {
+    padding: 15px 10px;
+    border-radius: 12px;
+    background: #f9f9f9;
+    margin-bottom: 15px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.event-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+}
+
+.event-title {
+    font-weight: 700;
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.event-about {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 12px;
+}
+
+.event-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #777;
+}
+
+.event-meta span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    background: #e0e0ff;
+    font-weight: 500;
+    font-size: 14px; /* default for both */
+}
+
+.event-meta .event-date {
+    background: #d1e7ff;
+    font-size: 16px;  /* increase font size for date */
+    font-weight: 600; /* make it bolder */
+}
+
+.event-meta .event-place {
+    background: #ffe0e0;
+    font-size: 14px; /* keep place slightly smaller */
+}
+
+
+.no-events {
+    font-size: 14px;
+    color: #999;
+    text-align: center;
+    padding: 20px 0;
+}

@@ -1,0 +1,103 @@
+{% extends "layout/base.html" %}
+
+{% block content %}
+<div style="font-family: 'Segoe UI', Tahoma, sans-serif; margin: 20px;">
+
+  <style>
+    /* Flash messages */
+    .flash-container { max-width: 920px; margin: 10px 0 16px; }
+    .flash { padding: 10px 12px; border-radius: 8px; margin-bottom: 8px; border: 1px solid #e6e6e6; background: #f8f9fb; color: #2b2b2b; font-size: 14px; }
+    .flash.success { background:#eaf6ed; border-color:#cfe9d6; color:#1f7a37; }
+    .flash.error   { background:#fdeaea; border-color:#f3c2c2; color:#9d1c1c; }
+    .flash.warning { background:#fff7e6; border-color:#ffe2a8; color:#8a5d00; }
+
+    /* Table + buttons */
+    .qty-btn { padding:4px 10px; }
+    .remove-btn { padding:4px 10px; color:red; background:transparent; border:1px solid #ddd; border-radius:4px; cursor:pointer; }
+    .confirm-btn { background:#2e2e54; color:white; padding:10px 20px; border:none; border-radius:6px; cursor:pointer; }
+    .confirm-btn:hover { background:#454270; }
+    .disabled { opacity: .6; cursor: not-allowed; }
+  </style>
+
+  <h1 style="color:#2e2e54;">🛒 Your Cart</h1>
+
+  <!-- Flash messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-container">
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  {% if cart %}
+    <table style="width:100%; border-collapse:collapse; margin-top:20px;">
+      <thead>
+        <tr style="background:#f2f2f2;">
+          <th style="padding:10px; border:1px solid #ddd; text-align:left;">Item</th>
+          <th style="padding:10px; border:1px solid #ddd; text-align:right;">Price (BDT)</th>
+          <th style="padding:10px; border:1px solid #ddd; text-align:center;">Quantity</th>
+          <th style="padding:10px; border:1px solid #ddd; text-align:right;">Subtotal (BDT)</th>
+          <th style="padding:10px; border:1px solid #ddd; text-align:center;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in cart %}
+        <tr>
+          <td style="padding:10px; border:1px solid #ddd;">{{ item.name }}</td>
+
+          <td style="padding:10px; border:1px solid #ddd; text-align:right;">
+            {{ "%.2f"|format(item.price) }}
+          </td>
+
+          <td style="padding:10px; border:1px solid #ddd; text-align:center;">
+            <!-- Decrease -->
+            <form action="{{ url_for('update_cart', food_id=item.id) }}" method="POST" style="display:inline;">
+              {% if csrf_token %}{{ csrf_token() }}{% endif %}
+              <input type="hidden" name="action" value="decrease">
+              <button type="submit" class="qty-btn" {% if item.quantity <= 1 %}disabled class="disabled"{% endif %}>−</button>
+            </form>
+
+            <span style="display:inline-block; min-width:28px; text-align:center;">{{ item.quantity }}</span>
+
+            <!-- Increase -->
+            <form action="{{ url_for('update_cart', food_id=item.id) }}" method="POST" style="display:inline;">
+              {% if csrf_token %}{{ csrf_token() }}{% endif %}
+              <input type="hidden" name="action" value="increase">
+              <button type="submit" class="qty-btn">+</button>
+            </form>
+          </td>
+
+          <td style="padding:10px; border:1px solid #ddd; text-align:right;">
+            {{ "%.2f"|format(item.price * item.quantity) }}
+          </td>
+
+          <td style="padding:10px; border:1px solid #ddd; text-align:center;">
+            <!-- Remove -->
+            <form action="{{ url_for('update_cart', food_id=item.id) }}" method="POST" style="display:inline;">
+              {% if csrf_token %}{{ csrf_token() }}{% endif %}
+              <input type="hidden" name="action" value="remove">
+              <button type="submit" class="remove-btn">🗑 Remove</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h3 style="margin-top:20px;">💰 Total: {{ "%.2f"|format(total) }} BDT</h3>
+
+    <!-- Confirm Order -->
+    <form action="{{ url_for('confirm_order') }}" method="POST" style="margin-top:20px;">
+      {% if csrf_token %}{{ csrf_token() }}{% endif %}
+      <button type="submit" class="confirm-btn">✅ Confirm Order</button>
+    </form>
+
+  {% else %}
+    <p>Your cart is empty. Go to <a href="{{ url_for('canteen_home') }}">Canteen</a> to add items.</p>
+  {% endif %}
+</div>
+{% endblock %}
+

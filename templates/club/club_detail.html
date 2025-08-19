@@ -4,8 +4,173 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>{{ club.name }} - Club Detail</title>
-<link rel="icon" type="image/x-icon" href="static\images\UnifyU_logo_finPNG.PNG">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/clubdetail.css') }}">
+<link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/UnifyU_logo_finPNG.PNG') }}">
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #e6e0f8; 
+    font-family: Arial, sans-serif;
+  }
+
+  .content-wrapper {
+    max-width: 1100px;
+    margin: 20px auto;
+    padding: 0 20px;
+  }
+
+  .card {
+    background: rgb(248, 247, 247);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(131, 119, 119, 0.1);
+  }
+
+  /* Club Info Card */
+  .club-info {
+    height: 200px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  .club-logo {
+    width: 200px;
+    height: 200px;
+    border-radius: 10%;
+    object-fit: cover;
+    background: #ddd;
+  }
+  
+  .club-details {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; 
+    flex-grow: 1;
+  }
+  .club-name {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    font-size: 36px;
+    margin: 0;
+    font-weight: 700;
+    color: #4b0082; 
+  }
+  .club-meta {
+    font-size: 14px;
+    color: #555;
+    margin-top: auto;
+  }
+
+  .apply-btn {
+    background-color: #7b2ff7;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 25px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    align-self: flex-start;
+  }
+  .apply-btn:hover {
+    background-color: #0abcf9;
+  }
+
+  /* About Card */
+  .about-header {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #4b0082;
+  }
+  .about-text {
+    font-size: 16px;
+    line-height: 1.5;
+    color: #444;
+  }
+
+  /* Events Card */
+  .card.events {
+    margin-top: 30px;
+    padding: 20px;
+    border-radius: 15px;
+    background: #fff;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  }
+
+  .events-header {
+    font-size: 24px;
+    font-weight: 700;
+    color: #4a00e0;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 5px;
+  }
+
+  .event-item {
+    padding: 15px 10px;
+    border-radius: 12px;
+    background: #f9f9f9;
+    margin-bottom: 15px;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .event-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+  }
+
+  .event-title {
+    font-weight: 700;
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 8px;
+  }
+
+  .event-about {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 12px;
+  }
+
+  .event-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #777;
+  }
+
+  .event-meta span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-weight: 500;
+    font-size: 14px;
+  }
+
+  .event-meta .event-date {
+    background: #d1e7ff;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .event-meta .event-place {
+    background: #ffe0e0;
+    font-size: 14px;
+  }
+
+  .no-events {
+    font-size: 14px;
+    color: #999;
+    text-align: center;
+    padding: 20px 0;
+  }
+</style>
 </head>
 <body>
   {% extends "layout/base.html" %}
@@ -39,15 +204,19 @@
       {% if club.events and club.events|length > 0 %}
         {% for event in club.events %}
           <div class="event-item">
-            <div class="event-name">{{ event.event_name }}</div>
-            <div class="event-date">{{ event.event_date.strftime('%Y-%m-%d') }}</div>
+            <div class="event-title">{{ event.event_name }}</div>
+            <div class="event-about">{{ event.event_about[:120] ~ ('...' if event.event_about|length > 120) }}</div>
+            <div class="event-meta">
+              <span class="event-place">📍 {{ event.event_place }}</span>
+              <span class="event-date">📅 {{ event.event_date.strftime('%Y-%m-%d') }}</span>
+            </div>
           </div>
         {% endfor %}
       {% else %}
-        <div>No events yet.</div>
+        <div class="no-events">No events yet.</div>
       {% endif %}
     </div>
   </div>
-  {% endblock %} 
+  {% endblock %}
 </body>
 </html>
