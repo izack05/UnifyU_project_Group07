@@ -431,6 +431,11 @@ def apply_club_form(club_id):
     club = Club.query.get_or_404(club_id)
     student = StudentRegistration.query.filter_by(id=current_user.id).first_or_404()
     return render_template('club/clubform.html', club=club, student=student)
+<<<<<<< HEAD
+
+
+=======
+>>>>>>> 4a29feeca4d0ed731115fe0dd6dc42a294c8ec30
 
 
 
