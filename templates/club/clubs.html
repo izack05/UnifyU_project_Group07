@@ -1,22 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Campus Clubs</title>
-  <link rel="icon" type="image/x-icon" href="static\images\UnifyU_logo_finPNG.PNG">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/clubhome.css') }}">
-</head>
-<body>
-<<<<<<< HEAD
-  {% extends "layout/base.html" %}
-  {% block content %}
-
-=======
 {% extends "layout/base.html" %}
 {% block content %}
-<div class="content-wrapper">
->>>>>>> 4a29feeca4d0ed731115fe0dd6dc42a294c8ec30
+
+<div class="container">
+
   <!-- Search Form -->
   <form action="{{ url_for('homeclub') }}" method="get" role="search">
     <input 
@@ -31,21 +17,32 @@
 
   <!-- AI Recommendation Card -->
   <div class="card-ai">
-    <h2 class="ai-header">AI Recommendations</h2>
+    <h2 class="ai-header">AI Recommendations 🤖</h2>
 
-    <div class="tags" role="list" style="justify-content: center; margin-bottom: 20px;">
-      <div tabindex="0" class="tag" role="listitem">Technology</div>
-      <div tabindex="0" class="tag" role="listitem">Art</div>
-      <div tabindex="0" class="tag" role="listitem">Book</div>
-      <div tabindex="0" class="tag" role="listitem">Music</div>
-      <div tabindex="0" class="tag" role="listitem">Science</div>
+    <div class="tags" role="list">
+      <div class="tag" tabindex="0" role="listitem">Technology</div>
+      <div class="tag" tabindex="0" role="listitem">Art</div>
+      <div class="tag" tabindex="0" role="listitem">Book</div>
+      <div class="tag" tabindex="0" role="listitem">Music</div>
+      <div class="tag" tabindex="0" role="listitem">Dance</div>
+      <div class="tag" tabindex="0" role="listitem">Research</div>
+      <div class="tag" tabindex="0" role="listitem">Brainstorm Ideas</div>
     </div>
 
     <p class="ai-description">
-      Discover personalized club suggestions tailored to your interests.
+      Tell me about your interests and discover clubs you'll love!
     </p>
-    
-    <button class="ai-button">Get Recommendations</button>
+
+    <!-- Chatbox -->
+    <div id="chat-container">
+      <div id="chat-messages">
+        <p style="font-style:italic; color:#666;">Your AI friend is here to help!...</p>
+      </div>
+      <div id="chat-input-wrapper">
+        <input type="text" id="chat-input" placeholder="Type your interests...">
+        <button id="chat-send" type="button">Send</button>
+      </div>
+    </div>
   </div>
 
   <!-- Clubs List -->
@@ -63,8 +60,165 @@
   {% else %}
     <p>No clubs found.</p>
   {% endif %}
-</div>
-{% endblock %} 
 
-</body>
-</html>
+</div>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to right, #f9f9ff, #f0faff);
+    margin: 0;
+    padding: 0;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 20px auto;
+    padding: 0 15px 40px;
+    box-sizing: border-box;
+  }
+
+  .search-bar {
+    width: 100%;
+    padding: 10px 20px;
+    border-radius: 25px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    outline: none;
+    margin-bottom: 20px;
+    background-color: #f0f0f0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    box-sizing: border-box;
+  }
+  .search-bar:focus {
+    border-color: #6a5acd;
+    box-shadow: 0 0 5px rgba(106,90,205,0.3);
+    background-color: #e6e6e6;
+  }
+
+  .card-ai {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 0 auto 25px;
+    text-align: center;
+    width: 100%;
+    max-width: 700px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-sizing: border-box;
+  }
+
+  .ai-header { font-size: 1.5rem; color: #333; margin-bottom: 10px; }
+  .ai-description { color: #555; font-size: 1rem; margin-bottom: 15px; }
+
+  .tags {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    justify-content: center;
+  }
+
+  .tag {
+    background: #ecc6f8;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    user-select: none;
+  }
+  .tag:hover, .tag:focus {
+    background: linear-gradient(to right, #7b2ff7, #0abcf9);
+    color: white;
+    transform: scale(1.05);
+    outline: none;
+  }
+
+  #chat-container { display: flex; flex-direction: column; gap: 10px; border: 1px solid #ddd; padding: 10px; border-radius: 8px; background: #f5f5f5; }
+  #chat-messages { height: 200px; overflow-y: auto; padding: 8px; border-radius: 6px; background: #fff; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
+  #chat-input-wrapper { display: flex; gap: 5px; }
+  #chat-input { flex: 1; padding: 8px 10px; border-radius: 6px; border: 1px solid #ccc; outline: none; min-width: 0; }
+  #chat-send { padding: 8px 15px; border: none; border-radius: 6px; background: #4caf50; color: #fff; cursor: pointer; }
+  #chat-send:hover { background: #45a049; }
+
+  a.club-card {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: #bcb7d9;
+    border-radius: 12px;
+    height: 200px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease;
+    flex-wrap: wrap;
+  }
+  a.club-card:hover, a.club-card:focus { transform: translateY(-3px); outline: none; }
+  .club-logo { width: 150px; height: 150px; border-radius: 10%; background: #ddd; object-fit: cover; flex-shrink: 0; transition: transform 0.2s ease; }
+  a.club-card:hover .club-logo { transform: scale(1.05); }
+  .club-info h3 { margin: 0; font-size: 18px; color: #333; }
+  .club-info p { margin: 5px 0 0; font-size: 14px; color: #444; max-width: 600px; }
+
+  @media (max-width: 768px) {
+    a.club-card { flex-direction: column; height: auto; }
+    .club-logo { width: 100%; height: auto; }
+  }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const sendButton = document.getElementById("chat-send");
+  const chatInput = document.getElementById("chat-input");
+  const chatMessages = document.getElementById("chat-messages");
+
+  function addMessage(text, sender) {
+      const p = document.createElement("p");
+      p.textContent = (sender === "user" ? "You: " : "AI: ") + text;
+      p.style.padding = "6px 10px";
+      p.style.borderRadius = "8px";
+      p.style.margin = "5px 0";
+      p.style.maxWidth = "90%";
+      p.style.wordWrap = "break-word";
+      p.style.alignSelf = sender === "user" ? "flex-end" : "flex-start";
+      p.style.textAlign = sender === "user" ? "right" : "left";
+      p.style.background = sender === "user" ? "#dcf8c6" : "#e1f0ff";
+      chatMessages.appendChild(p);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  async function sendMessage(message) {
+      if(!message) return;
+      addMessage(message, "user");
+      chatInput.value = "";
+      try {
+          const response = await fetch("{{ url_for('recommend') }}", {
+              method: "POST",
+              headers: {"Content-Type":"application/json"},
+              body: JSON.stringify({interest: message})
+          });
+          const data = await response.json();
+          addMessage(data.recommendation, "ai");
+      } catch(err) {
+          addMessage("Sorry, something went wrong.", "ai");
+      }
+  }
+
+  sendButton.addEventListener("click", () => sendMessage(chatInput.value));
+  chatInput.addEventListener("keypress", (e) => {
+      if(e.key === "Enter") {
+          e.preventDefault();
+          sendMessage(chatInput.value);
+      }
+  });
+
+  document.querySelectorAll(".tag").forEach(tag => {
+      tag.addEventListener("click", () => sendMessage(tag.textContent.trim()));
+  });
+});
+</script>
+
+{% endblock %}
