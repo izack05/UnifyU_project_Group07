@@ -1,8 +1,12 @@
 from flask import Flask, request, render_template, redirect, request, flash, url_for, session, jsonify, get_flashed_messages
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
+from flask_admin import Admin
+from flask_admin.contrib.sqla import ModelView
 
 from flask_login import UserMixin, LoginManager, login_user, login_required, logout_user, current_user
+
+from flask_migrate import Migrate
 
 from sk import flask_sk
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -28,6 +32,11 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 db.init_app(app)
 #secret key
 app.secret_key = flask_sk
+
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+migrate = Migrate(app, db) 
+
 
 #CSRF protection
 #csrf = SeaSurf(app)
@@ -60,12 +69,15 @@ class StudentRegistration(db.Model, UserMixin):
     email= db.Column(db.String(250), unique = True, nullable=False)
     password = db.Column(db.String(255), nullable=False) 
     gender= db.Column(db.String(6), unique = False, nullable=False)
+    is_staff = db.Column(db.Boolean, default = False)
 
 
 @login_manager.user_loader
 def load_user(user_id):
     return StudentRegistration.query.get(user_id)
 
+# admin = Admin(app)
+# admin.add_view(ModelView(StudentRegistration, db.session))
 
 #----------------------------------------------Sariha classes----------------------------------------------------------
 
@@ -164,7 +176,7 @@ class IssueLog(db.Model):
 
 #creating database
 with app.app_context():
-    db.create_all()
+    #db.create_all()
     seed_clubdata()
 
 
@@ -282,6 +294,10 @@ def registration_student():
     if password != confirm_password:
         flash("Passwords do not match!", "error")
         return redirect('/registration')
+    
+    if len(password) < 6:
+        flash("Password length cannot be less than 6 Characters", "error")
+        return redirect('/registration')
 
     hashed_password = generate_password_hash(password)
 
@@ -304,6 +320,17 @@ def getStudent_21201169():
     result = db.session.execute(text('SELECT * FROM student_registration')).fetchall()
     result = [dict(row._mapping) for row in result]
     return jsonify(result)
+
+#Admin page
+# @app.route('/admin')
+# @login_required
+# def admin():
+#     id = current_user.id
+#     if id == 12345678:
+#         return render_template("admin/admin.html")
+#     else:
+#         flash("Only Admin Has Access Here",'error')
+#         return redirect(url_for('homepage'))
 
 
 #Error pages
