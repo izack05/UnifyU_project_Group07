@@ -9,7 +9,7 @@ from flask_login import UserMixin, LoginManager, login_user, login_required, log
 
 from flask_migrate import Migrate
 
-from sk import flask_sk
+from sk import flask_sk, ai_key
 from werkzeug.security import generate_password_hash, check_password_hash
 #from flask_seasurf import SeaSurf
 
@@ -19,6 +19,9 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 
 from forms import LoginForm, UserForm, IssueLogForm
+
+import os
+import google.generativeai as genai
 
 # A flask instance
 app = Flask(__name__)
@@ -38,6 +41,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 #for database change Migrations
 migrate = Migrate(app, db) 
 
+
+genai.configure(api_key=ai_key)
 
 #CSRF protection
 #csrf = SeaSurf(app)
@@ -395,6 +400,42 @@ def club_detail(club_id):
 
 
 
+@app.route("/recommend", methods=["POST"])
+def recommend():
+    data = request.json
+    interest = data.get("interest", "")
+
+    # Fetch all clubs from database
+    clubs = Club.query.all()
+    clubs_list = "\n".join([f"{c.name}: {c.bio}" for c in clubs])
+
+    try:
+        model = genai.GenerativeModel("gemini-1.5-flash")
+
+        prompt = f"""
+        The student says: "{interest}".
+        
+        Available clubs:
+        {clubs_list}
+
+        Your job:
+        - If you find relevant clubs, reply ONLY in this format: 
+          "Hey! Based on your interests you might like to check out [club names]."
+        - If the interest is vague or weakly related, reply: 
+          "Hey, we think you'd might like these clubs: [club names]."
+        - If nothing matches at all or the input is nonsense, reply: 
+          "Sorry! Couldn't recommend a club, do browse and see what you like!"
+        - Keep the reply short and conversational. No extra text.
+        """
+
+        response = model.generate_content(prompt)
+        return jsonify({"recommendation": response.text.strip()})
+
+    except Exception as e:
+        return jsonify({"recommendation": f"Sorry, error: {str(e)}"})
+
+
+
 # @app.route('/apply_club/<int:club_id>', methods=['GET'])
 # @login_required
 # def apply_club_form(club_id):
@@ -431,11 +472,8 @@ def apply_club_form(club_id):
     club = Club.query.get_or_404(club_id)
     student = StudentRegistration.query.filter_by(id=current_user.id).first_or_404()
     return render_template('club/clubform.html', club=club, student=student)
-<<<<<<< HEAD
 
 
-=======
->>>>>>> 4a29feeca4d0ed731115fe0dd6dc42a294c8ec30
 
 
 
