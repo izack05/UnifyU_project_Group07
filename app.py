@@ -244,7 +244,7 @@ class IssueLog(db.Model):
 
 #creating database
 with app.app_context():
-    #db.create_all()
+    db.create_all()
 
     seed_clubdata()
     seed_fooddata()
@@ -782,11 +782,17 @@ def confirm_order():
         food_item = FoodItem.query.get(item['id'])
         if food_item and food_item.stock >= item['quantity']:
             food_item.stock -= item['quantity']
+            db.session.add(food_item)
         else:
             flash(f"⚠️ Not enough stock for {item['name']}.", "warning")
             return redirect(url_for('cart'))
 
     db.session.commit()
+
+    updated_items = FoodItem.query.all()
+    for item in updated_items:
+        print(f"{item.name}: {item.stock} left in stock")  # prints to server console
+
 
     # Calculate total
     total = sum(item['price'] * item['quantity'] for item in cart)
