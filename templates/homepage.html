@@ -169,7 +169,7 @@
 
     {% else %}
     <section class="services-grid">
-      <div class="service-card" onclick="alert('Navigate to Canteen')">
+      <div class="service-card" onclick="location.href='{{ url_for('canteen_home') }}'" style="cursor: pointer;">
         <img src="static/images/Food Icon Png.jpeg" alt="Canteen Icon" />
         <h2>Canteen and Co.</h2>
         <p>Pre-order/buy delicious and budget friendly snacks with just a few clicks!</p>

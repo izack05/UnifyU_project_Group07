@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Invoice</title>
+  <style>
+    :root {
+      --brand:#2e2e54;
+      --brand-2:#454270;
+      --card:#ffffff;
+      --bg:#f5f5f5;
+      --text:#2b2b2b;
+      --muted:#666;
+      --border:#e6e6e6;
+      --shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background-color: var(--bg);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 30px;
+      color: var(--text);
+    }
+
+    .invoice-card {
+      background-color: var(--card);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      padding: 28px;
+      max-width: 760px;
+      width: 100%;
+    }
+
+    header {
+      display:flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      gap: 16px;
+    }
+
+    h2 {
+      margin: 0;
+      color: var(--brand);
+      font-size: 24px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .meta {
+      text-align: right;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    /* Flash messages */
+    .flash-container { margin: 8px 0 16px; }
+    .flash {
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      border: 1px solid var(--border);
+      background: #f8f9fb;
+      color: var(--text);
+      font-size: 14px;
+    }
+    .flash.success { background:#eaf6ed; border-color:#cfe9d6; color:#1f7a37; }
+    .flash.error   { background:#fdeaea; border-color:#f3c2c2; color:#9d1c1c; }
+    .flash.warning { background:#fff7e6; border-color:#ffe2a8; color:#8a5d00; }
+
+    /* Bill-to block (optional) */
+    .party {
+      display:flex;
+      justify-content: space-between;
+      gap:16px;
+      margin: 10px 0 6px;
+      font-size: 14px;
+    }
+    .party div { flex:1; }
+    .party .label { color: var(--muted); font-size: 12px; margin-bottom: 4px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0 20px;
+      font-size: 14px;
+    }
+
+    thead th {
+      color: #555;
+      background: #fafafa;
+      border-bottom: 1px solid #ddd;
+      padding: 10px 12px;
+      text-align: left;
+    }
+
+    tbody td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #eee;
+      vertical-align: top;
+    }
+
+    .num { text-align: right; white-space: nowrap; }
+    .center { text-align:center; }
+
+    .totals {
+      margin-top: 8px;
+      border-top: 2px solid var(--brand);
+      padding-top: 10px;
+      max-width: 360px;
+      margin-left: auto;
+      font-size: 14px;
+    }
+
+    .totals .row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+    }
+
+    .totals .grand {
+      font-weight: bold;
+      font-size: 1.1em;
+      color: var(--brand);
+      margin-top: 4px;
+    }
+
+    .back-btn {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: var(--brand);
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      transition: 0.3s;
+    }
+    .back-btn:hover { background-color: var(--brand-2); }
+
+    /* Print styles */
+    @media print {
+      body { background: #fff; padding: 0; }
+      .invoice-card { box-shadow:none; border:0; border-radius:0; }
+      .back-btn { display:none; }
+      .flash-container { display:none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="invoice-card">
+    <header>
+      <h2>🧾 Invoice</h2>
+      <div class="meta">
+        {% if invoice_number %}<div><strong>Invoice #</strong> {{ invoice_number }}</div>{% endif %}
+        {% if invoice_date %}<div><strong>Date:</strong> {{ invoice_date }}</div>{% endif %}
+        {% if student_name %}<div><strong>Student:</strong> {{ student_name }}</div>{% endif %}
+      </div>
+    </header>
+
+    <!-- Flash messages (ensure invoice messages show here) -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-container">
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Optional bill-to / from (render only when provided) -->
+    {% if canteen_name or canteen_address or bill_to_name %}
+      <div class="party">
+        <div>
+          <div class="label">From</div>
+          <div><strong>{{ canteen_name or 'Canteen' }}</strong></div>
+          {% if canteen_address %}<div>{{ canteen_address }}</div>{% endif %}
+        </div>
+        <div>
+          <div class="label">Bill To</div>
+          <div><strong>{{ bill_to_name or student_name or 'Customer' }}</strong></div>
+          {% if bill_to_id %}<div>ID: {{ bill_to_id }}</div>{% endif %}
+        </div>
+      </div>
+    {% endif %}
+
+    <table>
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th class="center">Qty</th>
+          <th class="num">Price (BDT)</th>
+          <th class="num">Subtotal (BDT)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td>
+            <div><strong>{{ item.name }}</strong></div>
+            {% if item.description %}<div style="color:#777; font-size:12px; margin-top:2px;">{{ item.description }}</div>{% endif %}
+          </td>
+          <td class="center">{{ item.quantity }}</td>
+          <td class="num">{{ "%.2f"|format(item.price) }}</td>
+          <td class="num">{{ "%.2f"|format(item.price * item.quantity) }}</td>
+        </tr>
+        {% endfor %}
+        {% if not items %}
+        <tr>
+          <td colspan="4" class="center" style="color:#777;">No items to display.</td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+
+    <div class="totals">
+      <div class="row">
+        <span>Subtotal:</span>
+        <span>{{ "%.2f"|format(subtotal if subtotal is not none else 0) }} BDT</span>
+      </div>
+      {% if discount is defined and discount %}
+      <div class="row">
+        <span>Discount:</span>
+        <span>-{{ "%.2f"|format(discount) }} BDT</span>
+      </div>
+      {% endif %}
+      {% if tax is defined and tax %}
+      <div class="row">
+        <span>Tax:</span>
+        <span>{{ "%.2f"|format(tax) }} BDT</span>
+      </div>
+      {% endif %}
+      <div class="row grand">
+        <span>Total:</span>
+        <span>{{ "%.2f"|format(total if total is not none else (subtotal or 0)) }} BDT</span>
+      </div>
+    </div>
+
+    <a href="{{ url_for('canteen_home') }}" class="back-btn">Back to Canteen</a>
+  </div>
+</body>
+</html>
