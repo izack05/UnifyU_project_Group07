@@ -4,48 +4,50 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>{{ club.name }} - Club Detail</title>
+<link rel="icon" type="image/x-icon" href="static\images\UnifyU_logo_finPNG.PNG">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/clubdetail.css') }}">
 </head>
 <body>
-    {% extends "layout/base.html" %}
-    {% block content %}
-
-  <!-- Club Info Card -->
-  <div class="card club-info">
-    <img 
-      src="{{ url_for('static', filename='logos/' + club.logo) if club.logo else url_for('static', filename='logos/default.png') }}" 
-      alt="Club Logo" 
-      class="club-logo" 
-    />
-    <div class="club-details">
-      <h1 class="club-name">{{ club.name }}</h1>
-      <div class="club-meta">👥 {{ club.members }} members | ⭐ {{ '%.1f' % club.rating }} rating</div>
+  {% extends "layout/base.html" %}
+  {% block content %}
+  <div class="content-wrapper">
+    <!-- Club Info Card -->
+    <div class="card club-info">
+      <img 
+        src="{{ url_for('static', filename='logos/' + club.logo) if club.logo else url_for('static', filename='logos/default.png') }}" 
+        alt="Club Logo" 
+        class="club-logo" 
+      />
+      <div class="club-details">
+        <h1 class="club-name">{{ club.name }}</h1>
+        <div class="club-meta">👥 {{ club.members }} members | ⭐ {{ '%.1f' % club.rating }} rating</div>
+      </div>
+      <a href="{{ url_for('apply_club_form', club_id=club.id) }}" class="apply-btn">Apply to Join</a>
     </div>
-    <a href="{{ url_for('apply_club_form', club_id=club.id) }}" class="apply-btn">Apply to Join</a>
-  </div>
 
-  <!-- About Card -->
-  <div class="card about">
-    <div class="about-header">About</div>
-    <div class="about-text">
-      {{ club.bio }}
+    <!-- About Card -->
+    <div class="card about">
+      <div class="about-header">About</div>
+      <div class="about-text">
+        {{ club.bio }}
+      </div>
+    </div>
+
+    <!-- Upcoming Events Card -->
+    <div class="card events">
+      <div class="events-header">Upcoming Events</div>
+      {% if club.events and club.events|length > 0 %}
+        {% for event in club.events %}
+          <div class="event-item">
+            <div class="event-name">{{ event.event_name }}</div>
+            <div class="event-date">{{ event.event_date.strftime('%Y-%m-%d') }}</div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div>No events yet.</div>
+      {% endif %}
     </div>
   </div>
-
-  <!-- Upcoming Events Card -->
-  <div class="card events">
-    <div class="events-header">Upcoming Events</div>
-    {% if club.events and club.events|length > 0 %}
-      {% for event in club.events %}
-        <div class="event-item">
-          <div class="event-name">{{ event.event_name }}</div>
-          <div class="event-date">{{ event.event_date.strftime('%Y-%m-%d') }}</div>
-        </div>
-      {% endfor %}
-    {% else %}
-      <div>No events yet.</div>
-    {% endif %}
-  </div>
-{% endblock %} 
+  {% endblock %} 
 </body>
 </html>

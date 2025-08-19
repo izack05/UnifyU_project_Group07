@@ -136,6 +136,16 @@
 <body>
     {% extends "layout/base.html" %}
     {% block content %}
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash-messages">
+            {% for category, message in messages %}
+              <p class="{{ category }}">{{ message }}</p>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
   <div class="container">
     <header>
         <h1>
@@ -146,7 +156,18 @@
     <section class="services-header">
       <button disabled>Available Services</button>
     </section>
+    
+    {% if current_user.is_staff %}
+    <section class="services-grid">
+      <div class="service-card" onclick="location.href='{{ url_for('view_issues') }}'" style="cursor: pointer;">
+        <img src="static/images/issuesLog.JPG" alt="Issues Log Icon" />
+        <h2>View Issues</h2>
+        <p>Choose and resolve student logged issues.</p>
+      </div>
+    </section>
 
+
+    {% else %}
     <section class="services-grid">
       <div class="service-card" onclick="alert('Navigate to Canteen')">
         <img src="static/images/Food Icon Png.jpeg" alt="Canteen Icon" />
@@ -160,7 +181,7 @@
         <p>Broaden your horizon by joining various university clubs. Explore, apply, join and flourish!</p>
       </div>
 
-      <div class="service-card" onclick="alert('Navigate to Library')">
+      <div class="service-card" onclick="location.href='{{ url_for('library_home') }}'" style="cursor: pointer;"> 
         <img src="static/images/Library Vector Icon Style.jpeg" alt="Library Icon" />
         <h2>Library Service</h2>
         <p>Issue books and memberships, book study pods, and view library hours!</p>
@@ -173,6 +194,8 @@
         <p>Report technical issues detected on campus and let our technicians resolve them.</p>
       </div>
     </section>
+    {% endif %}
+    
 
     <footer>
 

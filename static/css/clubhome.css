@@ -1,8 +1,13 @@
 
     body {
+      margin: 0;
+      padding: 0;
       font-family: Arial, sans-serif;
       background: linear-gradient(to right, #f9f9ff, #f0faff);
-      margin: 20px auto;
+    }
+    .content-wrapper {
+      max-width: 1100px; /* or whatever looks good */
+      margin: 20px auto; /* centers content */
       padding: 0 15px 40px;
     }
 
