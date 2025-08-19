@@ -171,6 +171,60 @@ class StudyPodBooking(db.Model):
 
 
 
+class FoodItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    stock = db.Column(db.Integer, nullable=False)
+    description = db.Column(db.String(200))
+    image = db.Column(db.String(200))
+    category = db.Column(db.String(50), nullable=False)  # NEW
+
+def seed_fooddata():
+    if not FoodItem.query.first():  # only seed if empty
+        foods = [
+            # Snacks
+            FoodItem(name="Vegetable Shingara", price=10, stock=50,
+                     description="Crispy fried shingara", image="shingara.jpg", category="Snacks"),
+            FoodItem(name="Chicken Samosa", price=10, stock=40,
+                     description="Spicy chicken samosa", image="samosa.jpg", category="Snacks"),
+            FoodItem(name="Chicken Shawarma", price=80, stock=25,
+                     description="Juicy chicken shawarma", image="shawarma.jpg", category="Snacks"),
+            FoodItem(name="Fuchka", price=60, stock=50,
+                     description="Mouthwatering Fuchka", image="fuchka.jpg", category="Snacks"),
+            FoodItem(name="Chicken Burger", price=80, stock=40,
+                     description="Crispy chicken burger", image="chicken_burger.jpg", category="Snacks"),
+            
+            # Rice
+            FoodItem(name="Plain Rice", price=20, stock=100,
+                     description="Steamed plain rice", image="plain_rice.jpg", category="Rice"),
+            FoodItem(name="Fried Rice", price=50, stock=80,
+                     description="Fried rice with vegetables", image="fried_rice.jpg", category="Rice"),
+            FoodItem(name="Khichuri", price=60, stock=70,
+                     description="Traditional khichuri", image="khichuri.jpg", category="Rice"),
+            FoodItem(name="Beef Tehari", price=120, stock=40,
+                     description="Spicy beef tehari", image="beef_tehari.jpg", category="Rice"),
+            FoodItem(name="Chicken Biryani", price=100, stock=50,
+                     description="Delicious chicken biryani", image="chicken_biryani.jpg", category="Rice"),
+
+            # Pasta & Noodles
+            FoodItem(name="Pasta", price=70, stock=40,
+                     description="Creamy pasta", image="pasta.jpg", category="Pasta & Noodles"),
+            FoodItem(name="Chowmein", price=60, stock=60,
+                     description="Stir-fried chowmein", image="chowmein.jpg", category="Pasta & Noodles"),
+
+            # Chicken
+            FoodItem(name="Chicken Curry", price=90, stock=50,
+                     description="Spicy chicken curry", image="chicken_curry.jpg", category="Chicken"),
+            FoodItem(name="Chicken Fry", price=80, stock=40,
+                     description="Crispy chicken fry", image="chicken_fry.jpg", category="Chicken"),
+            FoodItem(name="Chilli Chicken", price=100, stock=30,
+                     description="Hot chilli chicken", image="chilli_chicken.jpg", category="Chicken"),
+        ]
+        db.session.add_all(foods)
+        db.session.commit()
+
+
 
 #---------Nur classess------------------
 class IssueLog(db.Model):
@@ -196,8 +250,9 @@ class IssueLog(db.Model):
 #creating database
 with app.app_context():
     #db.create_all()
-    seed_clubdata()
 
+    seed_clubdata()
+    seed_fooddata()
 
 
 # Route decorators
@@ -475,8 +530,6 @@ def apply_club_form(club_id):
 
 
 
-
-
 @app.route('/apply_club/<int:club_id>', methods=['POST'])
 @login_required
 def register_student(club_id):
@@ -615,6 +668,181 @@ def studypod_booking():
     flash("Study Pod booked successfully!", "success")
     return redirect(url_for('library_home'))
 
+
+from collections import defaultdict
+
+
+
+@app.route('/canteen')
+def canteen_home():
+    # Fetch all items as you do now
+    items = FoodItem.query.all()
+
+    # Group by category
+    grouped_items = defaultdict(list)
+    for item in items:
+        grouped_items[item.category].append(item)
+
+    # Categories derived from keys
+    categories = list(grouped_items.keys())
+
+    # Selected category (optional)
+    selected = request.args.get('category', '').strip()
+    if selected and selected in categories:
+        # Narrow down to the selected category only
+        filtered_grouped = defaultdict(list)
+        filtered_grouped[selected] = grouped_items[selected][:]
+        grouped_items = filtered_grouped
+        categories = [selected]
+    else:
+        selected = ""
+
+    # Search query
+    q = request.args.get('q', '').strip().lower()
+    if q:
+        # Filter items within each category
+        for cat in list(grouped_items.keys()):
+            grouped_items[cat] = [
+                it for it in grouped_items[cat]
+                if q in it.name.lower() or (it.description and q in it.description.lower())
+            ]
+        # Remove empty categories after filtering
+        grouped_items = defaultdict(list, {c: lst for c, lst in grouped_items.items() if lst})
+
+        # If selected category became empty, reset to show "no results"
+        if selected and selected not in grouped_items:
+            grouped_items[selected] = []
+
+    cart = session.get('cart', [])
+    return render_template(
+        'canteen/canteen_home.html',
+        grouped_items=grouped_items,
+        cart=cart,
+        categories=list(grouped_items.keys()),  # update after filtering
+        selected_category=selected,
+        search_query=request.args.get('q', '').strip()
+    )
+
+
+@app.route('/add_to_cart/<int:food_id>', methods=['POST'])
+@login_required
+def add_to_cart(food_id):
+    item = FoodItem.query.get_or_404(food_id)
+    cart = session.get('cart', [])
+
+    # Check if item exists in cart
+    for c in cart:
+        if c['id'] == item.id:
+            if c['quantity'] < item.stock:
+                c['quantity'] += 1
+                flash(f"✅ {item.name} quantity updated in cart!", "success")
+            else:
+                flash(f"⚠️ Cannot add more {item.name}, stock limit reached.", "warning")
+            break
+    else:
+        if item.stock > 0:
+            cart.append({
+                'id': item.id,
+                'name': item.name,
+                'price': item.price,
+                'quantity': 1
+            })
+            flash(f"✅ {item.name} added to cart!", "success")
+        else:
+            flash(f"⚠️ {item.name} is out of stock!", "warning")
+
+    session['cart'] = cart
+    return redirect(url_for('canteen_home'))
+
+@app.route('/update_cart/<int:food_id>', methods=['POST'])
+@login_required
+def update_cart(food_id):
+    action = request.form.get('action')  # 'increase', 'decrease', 'remove'
+    cart = session.get('cart', [])
+
+    for item in cart:
+        if item['id'] == food_id:
+            if action == 'increase':
+                item['quantity'] += 1
+            elif action == 'decrease':
+                item['quantity'] -= 1
+                if item['quantity'] <= 0:
+                    cart.remove(item)  # remove if qty goes to 0
+            elif action == 'remove':
+                cart.remove(item)
+            break
+
+    session['cart'] = cart
+    return redirect(url_for('cart'))
+
+
+@app.route('/cart')
+@login_required
+def cart():
+    cart = session.get('cart', [])
+
+    # Ensure all items have quantity ≥ 1
+    for item in cart:
+        if 'quantity' not in item or item['quantity'] < 1:
+            item['quantity'] = 1
+
+    session['cart'] = cart  # update session
+
+    # Calculate total
+    total = sum(item['price'] * item['quantity'] for item in cart)
+
+    return render_template('canteen/cart.html', cart=cart, total=total)
+
+@app.route('/invoice')
+@login_required
+def invoice():
+    last_order = session.get('last_order')
+
+    if not last_order:
+        flash("❌ No recent order found.", "danger")
+        return redirect(url_for('canteen_home'))
+
+    items = last_order['items']
+    subtotal = sum(item['price'] * item['quantity'] for item in items)
+    total = last_order['total']
+
+    return render_template('canteen/invoice.html', items=items, subtotal=subtotal, total=total)
+
+
+@app.route('/confirm_order', methods=['POST'])
+@login_required
+def confirm_order():
+    cart = session.get('cart', [])
+
+    if not cart:
+        flash("❌ Your cart is empty.", "danger")
+        return redirect(url_for('cart'))
+
+    # Deduct stock
+    for item in cart:
+        food_item = FoodItem.query.get(item['id'])
+        if food_item and food_item.stock >= item['quantity']:
+            food_item.stock -= item['quantity']
+        else:
+            flash(f"⚠️ Not enough stock for {item['name']}.", "warning")
+            return redirect(url_for('cart'))
+
+    db.session.commit()
+
+    # Calculate total
+    total = sum(item['price'] * item['quantity'] for item in cart)
+
+    # Save last order in session for invoice
+    session['last_order'] = {
+        'items': cart.copy(),
+        'total': total
+    }
+
+    # Clear cart
+    session['cart'] = []
+
+    flash("✅ Order confirmed successfully!", "success")
+    return redirect(url_for('invoice'))
 
 #---------------Nur Routes---------------------
 
