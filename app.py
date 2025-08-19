@@ -1,5 +1,5 @@
 from flask import Flask, request, render_template, redirect, request, flash, url_for, session, jsonify, get_flashed_messages
-from wtforms import BooleanField
+from wtforms import BooleanField, TextAreaField
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
 from flask_admin import Admin, AdminIndexView, BaseView, expose
@@ -88,7 +88,6 @@ class StudentRegistration(db.Model, UserMixin):
     
 
 
-
 class StudentAdmin(ModelView):
     column_list = ('id', 'full_name', 'username', 'email', 'gender', 'is_verified', 'is_staff')
     form_columns = ('id','full_name', 'username', 'email', 'gender', 'password', 'is_verified', 'is_staff')
@@ -99,29 +98,6 @@ class StudentAdmin(ModelView):
             model.password = generate_password_hash(model.password)
 
 
-class MyModelView(ModelView):
-    def is_accessible(self):
-        return current_user.is_authenticated and current_user.is_admin
-
-    def inaccessible_callback(self, name, **kwargs):
-        return url_for("homepage")
-    
-class MyAdminIndexView(AdminIndexView):
-    def is_accessible(self):
-        return current_user.is_authenticated and current_user.is_admin
-
-    def inaccessible_callback(self, name, **kwargs):
-        return redirect(url_for("homepage"))
-    
-
-# class StudentRegistrationView(BaseView):
-#     @expose('/')
-#     def index(self):
-#         return self.render('admin/studentregister.html', endpoint='users')
-
-admin = Admin(name="Admin Panel", template_mode='bootstrap4', index_view = MyAdminIndexView())
-admin.init_app(app)
-admin.add_view(StudentAdmin(StudentRegistration, db.session, name="Users")) 
 
 
 #----------------------------------------------Sariha classes----------------------------------------------------------
@@ -206,6 +182,15 @@ class FoodItem(db.Model):
     image = db.Column(db.String(200))
     category = db.Column(db.String(50), nullable=False)  # NEW
 
+class FoodItemAdmin(ModelView):
+    column_list = ('id', 'name', 'price', 'stock', 'category')
+    column_searchable_list = ('name', 'category')
+    column_filters = ('category', 'price')
+    form_columns = ('name', 'price', 'stock', 'description', 'image', 'category')
+    form_overrides = {
+        'description': TextAreaField
+    }
+
 def seed_fooddata():
     if not FoodItem.query.first():  # only seed if empty
         foods = [
@@ -279,6 +264,33 @@ with app.app_context():
 
     seed_clubdata()
     seed_fooddata()
+
+#--------------------------------admin panel stuff-------------------------------------------------
+class MyModelView(ModelView):
+    def is_accessible(self):
+        return current_user.is_authenticated and current_user.is_admin
+
+    def inaccessible_callback(self, name, **kwargs):
+        return url_for("homepage")
+    
+class MyAdminIndexView(AdminIndexView):
+    def is_accessible(self):
+        return current_user.is_authenticated and current_user.is_admin
+
+    def inaccessible_callback(self, name, **kwargs):
+        return redirect(url_for("homepage"))
+    
+
+# class StudentRegistrationView(BaseView):
+#     @expose('/')
+#     def index(self):
+#         return self.render('admin/studentregister.html', endpoint='users')
+
+admin = Admin(name="Admin Panel", template_mode='bootstrap4', index_view = MyAdminIndexView())
+admin.init_app(app)
+admin.add_view(StudentAdmin(StudentRegistration, db.session, name="Users")) 
+admin.add_view(FoodItemAdmin(FoodItem, db.session, name="Food Items"))
+
 
 
 # Route decorators
@@ -486,7 +498,7 @@ def recommend():
     data = request.json
     interest = data.get("interest", "")
 
-    # Fetch all clubs from database
+    #Fetch all clubs from database
     clubs = Club.query.all()
     clubs_list = "\n".join([f"{c.name}: {c.bio}" for c in clubs])
 
@@ -582,10 +594,10 @@ def register_student(club_id):
 @app.route('/addevent')
 @login_required
 def addevent():
-    # Fetch all clubs to populate the dropdown
+    if not (current_user.is_authenticated and current_user.is_admin):
+        return redirect(url_for('homepage'))
     clubs = Club.query.all()
     if not clubs:
-        # Just redirect if no clubs exist
         return redirect(url_for('homeclub'))
     return render_template('club/addevent.html', clubs=clubs)
 
@@ -593,24 +605,22 @@ def addevent():
 @app.route('/add-event', methods=['POST'])
 @login_required
 def add_event():
-    # Get club_id safely
+
     club_id_str = request.form.get('club_id')
     if not club_id_str:
-        return redirect(url_for('addevent'))  # redirect if missing
+        return redirect(url_for('addevent'))
 
     try:
         club_id = int(club_id_str)
     except ValueError:
-        return redirect(url_for('addevent'))  # redirect if invalid
+        return redirect(url_for('addevent'))
 
-    # Convert event date string to date object
     event_date_str = request.form.get('event_date')
     try:
         event_date_obj = datetime.strptime(event_date_str, "%Y-%m-%d").date()
     except (ValueError, TypeError):
-        return redirect(url_for('addevent'))  # redirect if invalid
+        return redirect(url_for('addevent'))
 
-    # Create new event
     new_event = Event(
         club_id=club_id,
         event_name=request.form.get('event_name'),
