@@ -164,22 +164,6 @@ class StudyPodBooking(db.Model):
     )
 
 
-class StudyPodBooking(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    
-    user_id = db.Column(db.Integer, db.ForeignKey('student_registration.id'), nullable=False)
-    
-    fullname = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(250), nullable=False)
-    study_pod = db.Column(db.String(50), nullable=False)
-    date = db.Column(db.Date, nullable=False)
-    time_slot = db.Column(db.String(20), nullable=False)
-    
-    user = db.relationship('StudentRegistration', backref=db.backref('bookings', lazy=True))
-    
-    __table_args__ = (
-        db.UniqueConstraint('study_pod', 'date', 'time_slot', name='unique_pod_booking'),
-    )
 
 
 class FoodItem(db.Model):
