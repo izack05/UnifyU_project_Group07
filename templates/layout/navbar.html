@@ -25,6 +25,13 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNavDropdown">
       <ul class="navbar-nav ms-auto">
+        {% if current_user.is_authenticated and current_user.is_admin %}
+        
+        <li class="nav-item">
+          <a class="nav-link btn btn-outline-primary mx-1" aria-current="page" href="{{ url_for('admin.index') }}" style="color: #ece3e3">Admin Panel</a>
+        </li>
+
+        {% endif %}
         <li class="nav-item">
           <a class="nav-link btn btn-outline-primary mx-1" aria-current="page" href="{{ url_for('homepage') }}" style="color: #ece3e3">Home</a>
         </li>

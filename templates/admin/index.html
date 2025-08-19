@@ -1,8 +1,80 @@
 {% extends 'admin/master.html' %}
 
-{% block body %}
+{# --- Custom Page Title --- #}
+{% block title %}UnifyU Admin Panel{% endblock %}
 
-<h2>Admin Area</h2>
-<p>Do some admin things here..</p>
+{# --- Custom Head (CSS/JS) --- #}
+{% block head %}
+    {{ super() }}
 
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/UnifyU_logo_finPNG.png') }}">
+<nav class="navbar navbar-expand-lg" style="background-color: #1f65dc;">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="{{ url_for('homepage') }}" style="color: #ffffff; text-decoration: underline !important;">UnifyU</a>
+    
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    
+    <div class="collapse navbar-collapse" id="navbarNavDropdown">
+      <ul class="navbar-nav" style="margin-left: auto;">
+
+        <li class="nav-item">
+          <a class="nav-link btn btn-outline-primary mx-1" href="{{ url_for('admin.index') }}" style="color: #ece3e3">Admin Panel</a>
+        </li>
+        
+        <li class="nav-item">
+          <a class="nav-link btn btn-outline-primary mx-1" href="{{ url_for('homepage') }}" style="color: #ece3e3">Home</a>
+        </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+{% endblock %}
+
+
+
+{# --- Custom Navbar Brand (logo + name) --- #}
+{% block brand %}
+<a class="navbar-brand" href="{{ url_for('admin.index') }}">
+    <img src="{{ url_for('static', filename='images/UnifyU_logo_finPNG.png') }}" height="30" alt="Logo">
+    Admin Panel
+</a>
+{% endblock %}
+
+{# --- Main Navbar Menu --- #}
+{% block main_menu %}
+<ul class="navbar-nav mr-auto">
+    <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('admin.index') }}">Dashboard</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/admin/studentregistration/">Users</a>
+    </li>
+
+</ul>
+{% endblock %}
+
+{# --- Access Control (login/logout buttons) --- #}
+{% block access_control %}
+{{ super() }}
+{% endblock %}
+
+{# --- Messages / Alerts --- #}
+{% block messages %}
+{{ super() }}
+{% endblock %}
+
+{# --- Custom Header Above Content --- #}
+{% block page_body %}
+    
+
+{# Render default admin content (tables, forms, etc.) #}
+{{ super() }}
+{% endblock %}
+
+{# --- Optional Footer Area --- #}
+{% block tail %}
+{% include "layout/footer.html" %}
 {% endblock %}

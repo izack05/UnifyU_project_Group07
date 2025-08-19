@@ -2,7 +2,7 @@ from flask import Flask, request, render_template, redirect, request, flash, url
 from wtforms import BooleanField
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
-from flask_admin import Admin
+from flask_admin import Admin, AdminIndexView, BaseView, expose
 from flask_admin.contrib.sqla import ModelView
 
 from flask_login import UserMixin, LoginManager, login_user, login_required, logout_user, current_user
@@ -63,6 +63,13 @@ def unauthorized():
 #Add all classes here
 #---------Isaac classess--------------
 
+@login_manager.user_loader
+# def load_user(user_id):
+#     return StudentRegistration.query.get(user_id)
+def load_user(user_id):
+    return db.session.get(StudentRegistration, int(user_id))
+
+
 class StudentRegistration(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     full_name= db.Column(db.String(100), unique=False, nullable=False)
@@ -70,28 +77,47 @@ class StudentRegistration(db.Model, UserMixin):
     email= db.Column(db.String(250), unique = True, nullable=False)
     password = db.Column(db.String(255), nullable=False) 
     gender= db.Column(db.String(6), unique = False, nullable=False)
+    is_verified = db.Column(db.Boolean, default = False)
     is_staff = db.Column(db.Boolean, default = False)
+    is_admin = db.Column(db.Boolean, default = False)
+    
 
 
 
 class StudentAdmin(ModelView):
-    column_list = ('id', 'full_name', 'username', 'email', 'gender', 'is_staff')
-    form_columns = ('id','full_name', 'username', 'email', 'gender', 'password', 'is_staff')
+    column_list = ('id', 'full_name', 'username', 'email', 'gender', 'is_verified', 'is_staff')
+    form_columns = ('id','full_name', 'username', 'email', 'gender', 'password', 'is_verified', 'is_staff')
     form_excluded_columns = ()
     def on_model_change(self, form, model, is_created):
         # password hashing
         if model.password and not model.password.startswith('pbkdf2:'):
             model.password = generate_password_hash(model.password)
 
-admin = Admin(name="Admin Panel", template_mode='bootstrap4')
-admin.init_app(app)
-admin.add_view(StudentAdmin(StudentRegistration, db.session)) 
 
-@login_manager.user_loader
-# def load_user(user_id):
-#     return StudentRegistration.query.get(user_id)
-def load_user(user_id):
-    return db.session.get(StudentRegistration, int(user_id))
+class MyModelView(ModelView):
+    def is_accessible(self):
+        return current_user.is_authenticated and current_user.is_admin
+
+    def inaccessible_callback(self, name, **kwargs):
+        return url_for("homepage")
+    
+class MyAdminIndexView(AdminIndexView):
+    def is_accessible(self):
+        return current_user.is_authenticated and current_user.is_admin
+
+    def inaccessible_callback(self, name, **kwargs):
+        return redirect(url_for("homepage"))
+    
+
+# class StudentRegistrationView(BaseView):
+#     @expose('/')
+#     def index(self):
+#         return self.render('admin/studentregister.html', endpoint='users')
+
+admin = Admin(name="Admin Panel", template_mode='bootstrap4', index_view = MyAdminIndexView())
+admin.init_app(app)
+admin.add_view(StudentAdmin(StudentRegistration, db.session, name="Users")) 
+
 
 #----------------------------------------------Sariha classes----------------------------------------------------------
 
@@ -431,11 +457,8 @@ def apply_club_form(club_id):
     club = Club.query.get_or_404(club_id)
     student = StudentRegistration.query.filter_by(id=current_user.id).first_or_404()
     return render_template('club/clubform.html', club=club, student=student)
-<<<<<<< HEAD
 
 
-=======
->>>>>>> 4a29feeca4d0ed731115fe0dd6dc42a294c8ec30
 
 
 
