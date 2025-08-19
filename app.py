@@ -1,4 +1,5 @@
 from flask import Flask, request, render_template, redirect, request, flash, url_for, session, jsonify, get_flashed_messages
+from wtforms import BooleanField
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
 from flask_admin import Admin
@@ -34,7 +35,7 @@ db.init_app(app)
 app.secret_key = flask_sk
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
+#for database change Migrations
 migrate = Migrate(app, db) 
 
 
@@ -72,12 +73,25 @@ class StudentRegistration(db.Model, UserMixin):
     is_staff = db.Column(db.Boolean, default = False)
 
 
-@login_manager.user_loader
-def load_user(user_id):
-    return StudentRegistration.query.get(user_id)
 
-# admin = Admin(app)
-# admin.add_view(ModelView(StudentRegistration, db.session))
+class StudentAdmin(ModelView):
+    column_list = ('id', 'full_name', 'username', 'email', 'gender', 'is_staff')
+    form_columns = ('id','full_name', 'username', 'email', 'gender', 'password', 'is_staff')
+    form_excluded_columns = ()
+    def on_model_change(self, form, model, is_created):
+        # password hashing
+        if model.password and not model.password.startswith('pbkdf2:'):
+            model.password = generate_password_hash(model.password)
+
+admin = Admin(name="Admin Panel", template_mode='bootstrap4')
+admin.init_app(app)
+admin.add_view(StudentAdmin(StudentRegistration, db.session)) 
+
+@login_manager.user_loader
+# def load_user(user_id):
+#     return StudentRegistration.query.get(user_id)
+def load_user(user_id):
+    return db.session.get(StudentRegistration, int(user_id))
 
 #----------------------------------------------Sariha classes----------------------------------------------------------
 
