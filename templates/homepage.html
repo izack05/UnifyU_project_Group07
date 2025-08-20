@@ -159,10 +159,10 @@
     
     {% if current_user.is_staff %}
     <section class="services-grid">
-      <div class="service-card" onclick="location.href='{{ url_for('view_issues') }}'" style="cursor: pointer;">
+      <div class="service-card" onclick="location.href='{{ url_for('staff_issues') }}'" style="cursor: pointer;">
         <img src="static/images/issuesLog.JPG" alt="Issues Log Icon" />
-        <h2>View Issues</h2>
-        <p>Choose and resolve student logged issues.</p>
+        <h2>Manage Issues</h2>
+        <p>Update and resolve student logged issues.</p>
       </div>
     </section>
 
