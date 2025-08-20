@@ -242,17 +242,19 @@ class IssueLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('student_registration.id'), nullable=False)
     issue_title = db.Column(db.String(200), nullable=False)
-    issue_category = db.Column(db.String(50), nullable=False)  # Lab Computer, Network, Facilities, Other
+    issue_category = db.Column(db.String(50), nullable=False)
     issue_description = db.Column(db.Text, nullable=False)
-    location = db.Column(db.String(100), nullable=False)  # Building/Room location
-    priority = db.Column(db.String(20), nullable=False, default='Medium')  # Low, Medium, High, Critical
-    status = db.Column(db.String(20), nullable=False, default='Open')  # Open, In Progress, Resolved, Closed
+    floor = db.Column(db.String(3), nullable=False)  # New field for floor
+    location = db.Column(db.String(100), nullable=False)
+    priority = db.Column(db.String(20), nullable=False, default='Medium')
+    status = db.Column(db.String(20), nullable=False, default='Reported')  # Changed default from 'Open'
     submitted_at = db.Column(db.DateTime, nullable=False, default=datetime.now)
     resolved_at = db.Column(db.DateTime, nullable=True)
     staff_notes = db.Column(db.Text, nullable=True)
+    resolved_by = db.Column(db.Integer, db.ForeignKey('student_registration.id'), nullable=True)  # New field
     
-    # Relationship to student
-    student = db.relationship('StudentRegistration', backref=db.backref('issues', lazy=True))
+    student = db.relationship('StudentRegistration', backref=db.backref('issues', lazy=True), foreign_keys=[student_id])
+    staff = db.relationship('StudentRegistration', backref=db.backref('resolved_issues', lazy=True), foreign_keys=[resolved_by])
 
 
 
@@ -928,8 +930,10 @@ def log_issue():
             issue_title=form.issue_title.data,
             issue_category=form.issue_category.data,
             issue_description=form.issue_description.data,
+            floor=form.floor.data,
             location=form.location.data,
-            priority=form.priority.data
+            priority=form.priority.data,
+            status='Reported'
         )
         db.session.add(new_issue)
         db.session.commit()
@@ -952,12 +956,60 @@ def view_issue_detail(issue_id):
     
     return render_template('issues/issue_detail.html', issue=issue)
 
+@app.route('/staff/issues')
+@login_required
+def staff_issues():
+    if not current_user.is_staff:
+        flash('Access denied. Staff only area.', 'error')
+        return redirect(url_for('homepage'))
+    
+    floor = request.args.get('floor', 'ALL')
+    
+    if floor != 'ALL':
+        issues = IssueLog.query.filter_by(floor=floor).all()
+    else:
+        issues = IssueLog.query.all()
+    
+    reported = [i for i in issues if i.status == 'Reported']
+    on_process = [i for i in issues if i.status == 'On Process']
+    solved = [i for i in issues if i.status == 'Solved']
+    
+    return render_template('issues/staff_issues.html', 
+                         reported=reported,
+                         on_process=on_process,
+                         solved=solved,
+                         selected_floor=floor)
 
+@app.route('/staff/update_issue_status', methods=['POST'])
+@login_required
+def update_issue_status():
+    if not current_user.is_staff:
+        return jsonify({'error': 'Access denied'}), 403
+    
+    issue_id = request.form.get('issue_id')
+    new_status = request.form.get('status')
+    staff_notes = request.form.get('staff_notes', '')
+    
+    issue = IssueLog.query.get_or_404(issue_id)
+    issue.status = new_status
+    issue.staff_notes = staff_notes
+    if new_status == 'Solved':
+        issue.resolved_at = datetime.now()
+        issue.resolved_by = current_user.id
+    
+    db.session.commit()
+    
+    return jsonify({'success': True})
 
-
-
-
-
+@app.route('/staff/issue/<int:issue_id>')
+@login_required
+def staff_issue_detail(issue_id):
+    if not current_user.is_staff:
+        flash('Access denied. Staff only area.', 'error')
+        return redirect(url_for('homepage'))
+        
+    issue = IssueLog.query.get_or_404(issue_id)
+    return render_template('issues/staff_issue_detail.html', issue=issue)
 #------------------------------end-----------------------------------------
 if __name__ == '__main__':
     app.run(debug=True)   #helps us debug
