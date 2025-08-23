@@ -490,37 +490,6 @@ def recommend():
         return jsonify({"recommendation": f"Sorry, error: {str(e)}"})
 
 
-
-# @app.route('/apply_club/<int:club_id>', methods=['GET'])
-# @login_required
-# def apply_club_form(club_id):
-#     club = Club.query.get_or_404(club_id)
-#     return render_template('club/clubform.html', club=club)
-
-
-
-
-
-# @app.route('/apply_club/<int:club_id>', methods=['POST'])
-# @login_required
-# def register_student(club_id):
-#     club = Club.query.get_or_404(club_id)
-
-#     Student_row = clubapp(
-#         name=request.form.get('name'), 
-#         studid=request.form.get('studid'), 
-#         email=request.form.get("email"), 
-#         phone=request.form.get("phone"),
-#         interests=request.form.get("interests"),
-#         skills=request.form.get("skills")
-#     )
-#     Student_row.club_id = club.id 
-
-#     db.session.add(Student_row)
-#     db.session.commit()
-
-#     return redirect(url_for('club_detail', club_id=club.id))
-
 @app.route('/apply_club/<int:club_id>', methods=['GET'])
 @login_required
 def apply_club_form(club_id):
@@ -554,10 +523,8 @@ def register_student(club_id):
 @app.route('/addevent')
 @login_required
 def addevent():
-    # Fetch all clubs to populate the dropdown
     clubs = Club.query.all()
     if not clubs:
-        # Just redirect if no clubs exist
         return redirect(url_for('homeclub'))
     return render_template('club/addevent.html', clubs=clubs)
 
@@ -565,24 +532,23 @@ def addevent():
 @app.route('/add-event', methods=['POST'])
 @login_required
 def add_event():
-    # Get club_id safely
     club_id_str = request.form.get('club_id')
     if not club_id_str:
-        return redirect(url_for('addevent'))  # redirect if missing
+        return redirect(url_for('addevent'))  
 
     try:
         club_id = int(club_id_str)
     except ValueError:
-        return redirect(url_for('addevent'))  # redirect if invalid
+        return redirect(url_for('addevent')) 
 
-    # Convert event date string to date object
+    
     event_date_str = request.form.get('event_date')
     try:
         event_date_obj = datetime.strptime(event_date_str, "%Y-%m-%d").date()
     except (ValueError, TypeError):
-        return redirect(url_for('addevent'))  # redirect if invalid
+        return redirect(url_for('addevent')) 
 
-    # Create new event
+    
     new_event = Event(
         club_id=club_id,
         event_name=request.form.get('event_name'),
