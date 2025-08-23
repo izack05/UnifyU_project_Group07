@@ -1,8 +1,8 @@
 from flask import Flask, request, render_template, redirect, request, flash, url_for, session, jsonify, get_flashed_messages
-from wtforms import BooleanField
+from wtforms import BooleanField, TextAreaField
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
-from flask_admin import Admin
+from flask_admin import Admin, AdminIndexView, BaseView, expose
 from flask_admin.contrib.sqla import ModelView
 
 from flask_login import UserMixin, LoginManager, login_user, login_required, logout_user, current_user
@@ -68,6 +68,13 @@ def unauthorized():
 #Add all classes here
 #---------Isaac classess--------------
 
+@login_manager.user_loader
+# def load_user(user_id):
+#     return StudentRegistration.query.get(user_id)
+def load_user(user_id):
+    return db.session.get(StudentRegistration, int(user_id))
+
+
 class StudentRegistration(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     full_name= db.Column(db.String(100), unique=False, nullable=False)
@@ -75,28 +82,23 @@ class StudentRegistration(db.Model, UserMixin):
     email= db.Column(db.String(250), unique = True, nullable=False)
     password = db.Column(db.String(255), nullable=False) 
     gender= db.Column(db.String(6), unique = False, nullable=False)
+    is_verified = db.Column(db.Boolean, default = False)
     is_staff = db.Column(db.Boolean, default = False)
-
+    is_admin = db.Column(db.Boolean, default = False)
+    
 
 
 class StudentAdmin(ModelView):
-    column_list = ('id', 'full_name', 'username', 'email', 'gender', 'is_staff')
-    form_columns = ('id','full_name', 'username', 'email', 'gender', 'password', 'is_staff')
+    column_list = ('id', 'full_name', 'username', 'email', 'gender', 'is_verified', 'is_staff')
+    form_columns = ('id','full_name', 'username', 'email', 'gender', 'password', 'is_verified', 'is_staff')
     form_excluded_columns = ()
     def on_model_change(self, form, model, is_created):
         # password hashing
         if model.password and not model.password.startswith('pbkdf2:'):
             model.password = generate_password_hash(model.password)
 
-admin = Admin(name="Admin Panel", template_mode='bootstrap4')
-admin.init_app(app)
-admin.add_view(StudentAdmin(StudentRegistration, db.session)) 
 
-@login_manager.user_loader
-# def load_user(user_id):
-#     return StudentRegistration.query.get(user_id)
-def load_user(user_id):
-    return db.session.get(StudentRegistration, int(user_id))
+
 
 #----------------------------------------------Sariha classes----------------------------------------------------------
 
@@ -180,6 +182,15 @@ class FoodItem(db.Model):
     image = db.Column(db.String(200))
     category = db.Column(db.String(50), nullable=False)  # NEW
 
+class FoodItemAdmin(ModelView):
+    column_list = ('id', 'name', 'price', 'stock', 'category')
+    column_searchable_list = ('name', 'category')
+    column_filters = ('category', 'price')
+    form_columns = ('name', 'price', 'stock', 'description', 'image', 'category')
+    form_overrides = {
+        'description': TextAreaField
+    }
+
 def seed_fooddata():
     if not FoodItem.query.first():  # only seed if empty
         foods = [
@@ -231,17 +242,19 @@ class IssueLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('student_registration.id'), nullable=False)
     issue_title = db.Column(db.String(200), nullable=False)
-    issue_category = db.Column(db.String(50), nullable=False)  # Lab Computer, Network, Facilities, Other
+    issue_category = db.Column(db.String(50), nullable=False)
     issue_description = db.Column(db.Text, nullable=False)
-    location = db.Column(db.String(100), nullable=False)  # Building/Room location
-    priority = db.Column(db.String(20), nullable=False, default='Medium')  # Low, Medium, High, Critical
-    status = db.Column(db.String(20), nullable=False, default='Open')  # Open, In Progress, Resolved, Closed
+    floor = db.Column(db.String(3), nullable=False)  # New field for floor
+    location = db.Column(db.String(100), nullable=False)
+    priority = db.Column(db.String(20), nullable=False, default='Medium')
+    status = db.Column(db.String(20), nullable=False, default='Reported')  # Changed default from 'Open'
     submitted_at = db.Column(db.DateTime, nullable=False, default=datetime.now)
     resolved_at = db.Column(db.DateTime, nullable=True)
     staff_notes = db.Column(db.Text, nullable=True)
+    resolved_by = db.Column(db.Integer, db.ForeignKey('student_registration.id'), nullable=True)  # New field
     
-    # Relationship to student
-    student = db.relationship('StudentRegistration', backref=db.backref('issues', lazy=True))
+    student = db.relationship('StudentRegistration', backref=db.backref('issues', lazy=True), foreign_keys=[student_id])
+    staff = db.relationship('StudentRegistration', backref=db.backref('resolved_issues', lazy=True), foreign_keys=[resolved_by])
 
 
 
@@ -253,6 +266,33 @@ with app.app_context():
 
     seed_clubdata()
     seed_fooddata()
+
+#--------------------------------admin panel stuff-------------------------------------------------
+class MyModelView(ModelView):
+    def is_accessible(self):
+        return current_user.is_authenticated and current_user.is_admin
+
+    def inaccessible_callback(self, name, **kwargs):
+        return url_for("homepage")
+    
+class MyAdminIndexView(AdminIndexView):
+    def is_accessible(self):
+        return current_user.is_authenticated and current_user.is_admin
+
+    def inaccessible_callback(self, name, **kwargs):
+        return redirect(url_for("homepage"))
+    
+
+# class StudentRegistrationView(BaseView):
+#     @expose('/')
+#     def index(self):
+#         return self.render('admin/studentregister.html', endpoint='users')
+
+admin = Admin(name="Admin Panel", template_mode='bootstrap4', index_view = MyAdminIndexView())
+admin.init_app(app)
+admin.add_view(StudentAdmin(StudentRegistration, db.session, name="Users")) 
+admin.add_view(FoodItemAdmin(FoodItem, db.session, name="Food Items"))
+
 
 
 # Route decorators
@@ -460,7 +500,7 @@ def recommend():
     data = request.json
     interest = data.get("interest", "")
 
-    # Fetch all clubs from database
+    #Fetch all clubs from database
     clubs = Club.query.all()
     clubs_list = "\n".join([f"{c.name}: {c.bio}" for c in clubs])
 
@@ -499,6 +539,8 @@ def apply_club_form(club_id):
 
 
 
+
+
 @app.route('/apply_club/<int:club_id>', methods=['POST'])
 @login_required
 def register_student(club_id):
@@ -523,6 +565,8 @@ def register_student(club_id):
 @app.route('/addevent')
 @login_required
 def addevent():
+    if not (current_user.is_authenticated and current_user.is_admin):
+        return redirect(url_for('homepage'))
     clubs = Club.query.all()
     if not clubs:
         return redirect(url_for('homeclub'))
@@ -532,23 +576,22 @@ def addevent():
 @app.route('/add-event', methods=['POST'])
 @login_required
 def add_event():
+
     club_id_str = request.form.get('club_id')
     if not club_id_str:
-        return redirect(url_for('addevent'))  
+        return redirect(url_for('addevent'))
 
     try:
         club_id = int(club_id_str)
     except ValueError:
-        return redirect(url_for('addevent')) 
+        return redirect(url_for('addevent'))
 
-    
     event_date_str = request.form.get('event_date')
     try:
         event_date_obj = datetime.strptime(event_date_str, "%Y-%m-%d").date()
     except (ValueError, TypeError):
-        return redirect(url_for('addevent')) 
+        return redirect(url_for('addevent'))
 
-    
     new_event = Event(
         club_id=club_id,
         event_name=request.form.get('event_name'),
@@ -856,8 +899,10 @@ def log_issue():
             issue_title=form.issue_title.data,
             issue_category=form.issue_category.data,
             issue_description=form.issue_description.data,
+            floor=form.floor.data,
             location=form.location.data,
-            priority=form.priority.data
+            priority=form.priority.data,
+            status='Reported'
         )
         db.session.add(new_issue)
         db.session.commit()
@@ -880,12 +925,60 @@ def view_issue_detail(issue_id):
     
     return render_template('issues/issue_detail.html', issue=issue)
 
+@app.route('/staff/issues')
+@login_required
+def staff_issues():
+    if not current_user.is_staff:
+        flash('Access denied. Staff only area.', 'error')
+        return redirect(url_for('homepage'))
+    
+    floor = request.args.get('floor', 'ALL')
+    
+    if floor != 'ALL':
+        issues = IssueLog.query.filter_by(floor=floor).all()
+    else:
+        issues = IssueLog.query.all()
+    
+    reported = [i for i in issues if i.status == 'Reported']
+    on_process = [i for i in issues if i.status == 'On Process']
+    solved = [i for i in issues if i.status == 'Solved']
+    
+    return render_template('issues/staff_issues.html', 
+                         reported=reported,
+                         on_process=on_process,
+                         solved=solved,
+                         selected_floor=floor)
 
+@app.route('/staff/update_issue_status', methods=['POST'])
+@login_required
+def update_issue_status():
+    if not current_user.is_staff:
+        return jsonify({'error': 'Access denied'}), 403
+    
+    issue_id = request.form.get('issue_id')
+    new_status = request.form.get('status')
+    staff_notes = request.form.get('staff_notes', '')
+    
+    issue = IssueLog.query.get_or_404(issue_id)
+    issue.status = new_status
+    issue.staff_notes = staff_notes
+    if new_status == 'Solved':
+        issue.resolved_at = datetime.now()
+        issue.resolved_by = current_user.id
+    
+    db.session.commit()
+    
+    return jsonify({'success': True})
 
-
-
-
-
+@app.route('/staff/issue/<int:issue_id>')
+@login_required
+def staff_issue_detail(issue_id):
+    if not current_user.is_staff:
+        flash('Access denied. Staff only area.', 'error')
+        return redirect(url_for('homepage'))
+        
+    issue = IssueLog.query.get_or_404(issue_id)
+    return render_template('issues/staff_issue_detail.html', issue=issue)
 #------------------------------end-----------------------------------------
 if __name__ == '__main__':
     app.run(debug=True)   #helps us debug

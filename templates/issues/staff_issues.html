@@ -1,0 +1,158 @@
+{% extends "layout/base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Issue Management Dashboard</h2>
+    
+    <div class="floor-filter mb-4">
+        <select id="floorSelect" class="form-select" onchange="updateFloorFilter(this.value)">
+            <option value="ALL" {% if selected_floor == 'ALL' %}selected{% endif %}>All Floors</option>
+            {% for floor in ['B3','B2','B1','G','1','2','3','4','5','6','7','8','9','10','11','12','13','14','FT'] %}
+            <option value="{{ floor }}" {% if selected_floor == floor %}selected{% endif %}>{{ floor }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="card-title mb-0">Reported</h3>
+                </div>
+                <div class="card-body issue-column" id="reported">
+                    {% for issue in reported %}
+                        <div class="issue-card" draggable="true" data-issue-id="{{ issue.id }}">
+                            <h5>{{ issue.issue_title }}</h5>
+                            <p class="mb-1"><strong>Floor:</strong> {{ issue.floor }}</p>
+                            <p class="mb-1"><strong>Location:</strong> {{ issue.location }}</p>
+                            <a href="{{ url_for('staff_issue_detail', issue_id=issue.id) }}" class="btn btn-sm btn-info mt-2">View Details</a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h3 class="card-title mb-0">On Process</h3>
+                </div>
+                <div class="card-body issue-column" id="on-process">
+                    {% for issue in on_process %}
+                        <div class="issue-card" draggable="true" data-issue-id="{{ issue.id }}">
+                            <h5>{{ issue.issue_title }}</h5>
+                            <p class="mb-1"><strong>Floor:</strong> {{ issue.floor }}</p>
+                            <p class="mb-1"><strong>Location:</strong> {{ issue.location }}</p>
+                            <a href="{{ url_for('staff_issue_detail', issue_id=issue.id) }}" class="btn btn-sm btn-info mt-2">View Details</a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h3 class="card-title mb-0">Solved</h3>
+                </div>
+                <div class="card-body issue-column" id="solved">
+                    {% for issue in solved %}
+                        <div class="issue-card" draggable="true" data-issue-id="{{ issue.id }}">
+                            <h5>{{ issue.issue_title }}</h5>
+                            <p class="mb-1"><strong>Floor:</strong> {{ issue.floor }}</p>
+                            <p class="mb-1"><strong>Location:</strong> {{ issue.location }}</p>
+                            <a href="{{ url_for('staff_issue_detail', issue_id=issue.id) }}" class="btn btn-sm btn-info mt-2">View Details</a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.issue-card {
+    background: white;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    cursor: move;
+}
+
+.issue-card.dragging {
+    opacity: 0.5;
+}
+
+.issue-column {
+    min-height: 400px;
+    padding: 15px;
+}
+
+.issue-column.drag-over {
+    background-color: #f8f9fa;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const columns = document.querySelectorAll('.issue-column');
+    const cards = document.querySelectorAll('.issue-card');
+
+    cards.forEach(card => {
+        card.addEventListener('dragstart', dragStart);
+        card.addEventListener('dragend', dragEnd);
+    });
+
+    columns.forEach(column => {
+        column.addEventListener('dragover', dragOver);
+        column.addEventListener('drop', drop);
+    });
+});
+
+function updateFloorFilter(floor) {
+    window.location.href = `{{ url_for('staff_issues') }}?floor=${floor}`;
+}
+
+function dragStart(e) {
+    e.target.classList.add('dragging');
+}
+
+function dragEnd(e) {
+    e.target.classList.remove('dragging');
+}
+
+function dragOver(e) {
+    e.preventDefault();
+    const column = e.target.closest('.issue-column');
+    if (column) {
+        column.classList.add('drag-over');
+    }
+}
+
+function drop(e) {
+    e.preventDefault();
+    const column = e.target.closest('.issue-column');
+    if (!column) return;
+    
+    column.classList.remove('drag-over');
+    const card = document.querySelector('.dragging');
+    const newStatus = column.id === 'on-process' ? 'On Process' : 
+                     column.id === 'solved' ? 'Solved' : 'Reported';
+
+    const formData = new FormData();
+    formData.append('issue_id', card.dataset.issueId);
+    formData.append('status', newStatus);
+
+    fetch('{{ url_for("update_issue_status") }}', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            column.appendChild(card);
+        }
+    });
+}
+</script>
+{% endblock %}
