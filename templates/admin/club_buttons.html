@@ -1,0 +1,133 @@
+{% extends 'admin/master.html' %}
+
+{# --- Custom Page Title --- #}
+{% block title %}UnifyU Admin Panel{% endblock %}
+
+{# --- Custom Head (CSS/JS) --- #}
+{% block head %}
+    {{ super() }}
+
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/UnifyU_logo_finPNG.png') }}">
+
+    <nav class="navbar navbar-expand-lg" style="background-color: #1f65dc;">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="{{ url_for('homepage') }}" style="color: #ffffff; text-decoration: underline !important;">UnifyU</a>
+        
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarNavDropdown">
+          <ul class="navbar-nav" style="margin-left: auto;">
+
+            <li class="nav-item">
+              <a class="nav-link btn btn-outline-primary mx-1" href="{{ url_for('admin.index') }}" style="color: #ece3e3">Admin Panel</a>
+            </li>
+            
+            <li class="nav-item">
+              <a class="nav-link btn btn-outline-primary mx-1" href="{{ url_for('homepage') }}" style="color: #ece3e3">Home</a>
+            </li>
+            
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <style>
+        /* Page background */
+        body {
+            background-color: #f2f3f7;
+        }
+
+        /* Page header */
+        .page-header {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        /* Button container */
+        .buttons-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-top: 50px;
+        }
+
+        /* Custom buttons */
+        .btn-custom {
+            flex: 1 1 250px;
+            max-width: 300px;
+            padding: 18px 25px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 12px;
+            border: none;
+            color: #ece3e3;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn-primary-custom { background-color: #2c3e50; } /* navy-ish */
+        .btn-primary-custom:hover { background-color: #34495e; transform: translateY(-3px); box-shadow: 0 8px 16px rgba(0,0,0,0.25); }
+
+        .btn-success-custom { background-color: #7f8c8d; } /* ashy gray */
+        .btn-success-custom:hover { background-color: #95a5a6; transform: translateY(-3px); box-shadow: 0 8px 16px rgba(0,0,0,0.25); }
+
+        .btn-danger-custom { background-color: #34495e; } /* deep navy */
+        .btn-danger-custom:hover { background-color: #2c3e50; transform: translateY(-3px); box-shadow: 0 8px 16px rgba(0,0,0,0.25); }
+    </style>
+{% endblock %}
+
+{# --- Custom Navbar Brand (logo + name) --- #}
+{% block brand %}
+<a class="navbar-brand" href="{{ url_for('admin.index') }}">
+    <img src="{{ url_for('static', filename='images/UnifyU_logo_finPNG.png') }}" height="30" alt="Logo">
+    Admin Panel
+</a>
+{% endblock %}
+
+{% block body %}
+    <h2 class="page-header">Campus Club Actions</h2>
+
+    {% if message %}
+        <div class="alert alert-info">{{ message }}</div>
+    {% endif %}
+
+    <div class="buttons-container">
+        <a href="{{ url_for('page1') }}" class="btn btn-custom btn-primary-custom">
+            <i class="bi bi-people-fill me-2"></i> Add Club
+        </a>
+        <a href="{{ url_for('addevent') }}" class="btn btn-custom btn-success-custom">
+            <i class="bi bi-bar-chart-line-fill me-2"></i> Add Club Event
+        </a>
+        <a href="{{ url_for('page3') }}" class="btn btn-custom btn-danger-custom">
+            <i class="bi bi-clipboard-check-fill me-2"></i> Club Applications
+        </a>
+    </div>
+{% endblock %}
+
+{# --- Access Control (login/logout buttons) --- #}
+{% block access_control %}
+{{ super() }}
+{% endblock %}
+
+{# --- Messages / Alerts --- #}
+{% block messages %}
+{{ super() }}
+{% endblock %}
+
+{# --- Custom Header Above Content --- #}
+{% block page_body %}
+{{ super() }}
+{% endblock %}
+
+{# --- Optional Footer Area --- #}
+{% block tail %}
+{% include "layout/footer.html" %}
+{% endblock %}

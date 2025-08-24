@@ -283,6 +283,12 @@ class MyAdminIndexView(AdminIndexView):
         return redirect(url_for("homepage"))
     
 
+class MyButtonsView(BaseView):
+    @expose('/')
+    def index(self):
+        return self.render('admin/club_buttons.html')
+    
+
 # class StudentRegistrationView(BaseView):
 #     @expose('/')
 #     def index(self):
@@ -292,6 +298,17 @@ admin = Admin(name="Admin Panel", template_mode='bootstrap4', index_view = MyAdm
 admin.init_app(app)
 admin.add_view(StudentAdmin(StudentRegistration, db.session, name="Users")) 
 admin.add_view(FoodItemAdmin(FoodItem, db.session, name="Food Items"))
+admin.add_view(MyButtonsView(name="Club Actions", endpoint="actions"))
+
+
+@app.route("/page1")
+def page1():
+    return "<h1>Page 1</h1>"
+
+
+@app.route("/page3")
+def page3():
+    return "<h1>Page 3</h1>"
 
 
 
