@@ -306,12 +306,6 @@ def page1():
     return "<h1>Page 1</h1>"
 
 
-@app.route("/page3")
-def page3():
-    return "<h1>Page 3</h1>"
-
-
-
 # Route decorators
 #please make sure that you add @login_required decorator after every @app.route and before the funciton
 
@@ -578,6 +572,16 @@ def register_student(club_id):
     db.session.commit()
 
     return redirect(url_for('club_detail', club_id=club.id))
+
+@app.route('/show_club_applications')
+@login_required
+def show_club_applications():
+    if not current_user.is_admin:
+        return redirect(url_for("homepage"))
+
+    applications = clubapp.query.join(clubapp.club).order_by(Club.name, clubapp.name).all()
+    return render_template('club/view_clubapp.html', applications=applications)
+
 
 @app.route('/addevent')
 @login_required
