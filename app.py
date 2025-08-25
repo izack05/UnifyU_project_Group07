@@ -888,6 +888,16 @@ def confirm_order():
     if not cart:
         flash("❌ Your cart is empty.", "danger")
         return redirect(url_for('cart'))
+    
+    student = StudentRegistration.query.get(current_user.id)
+    if not student:
+        return redirect(url_for('cart'))
+    
+    total = sum(item['price'] * item['quantity'] for item in cart)
+
+    if student.balance < total:
+        flash("❌ Insufficient balance. Please top up first.", "warning")
+        return redirect(url_for('cart'))
 
     # Deduct stock
     for item in cart:
@@ -898,16 +908,15 @@ def confirm_order():
         else:
             flash(f"⚠️ Not enough stock for {item['name']}.", "warning")
             return redirect(url_for('cart'))
+        
+    student.balance -= total
+    db.session.add(student)
 
     db.session.commit()
 
     updated_items = FoodItem.query.all()
     for item in updated_items:
         print(f"{item.name}: {item.stock} left in stock")  # prints to server console
-
-
-    # Calculate total
-    total = sum(item['price'] * item['quantity'] for item in cart)
 
     # Save last order in session for invoice
     session['last_order'] = {
