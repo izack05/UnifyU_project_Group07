@@ -123,15 +123,16 @@ class Club(db.Model):
     bio = db.Column(db.Text)                     
     rating = db.Column(db.Float, default=0.0)    
     members = db.Column(db.Integer, default=0) 
+    email = db.Column(db.String(250))
     events = db.relationship('Event', backref='club', lazy=True)
 
 def seed_clubdata():
     if not Club.query.first():
         clubs = [
-            Club(name='Computer Club', logo='computer.png', bio='A community for tech enthusiasts to collaborate on projects, participate in hackathons and share a skill space with the like-minded.', rating=4.8, members=450),
-            Club(name='Research Club', logo='research.png', bio='A hub for curious minds to explore innovative ideas, collaborate on research projects, and engage in academic discussions across disciplines.', rating=4.2, members=422),
-            Club(name='Cultural Club', logo='cultural.png', bio='A vibrant space to celebrate diverse traditions, showcase talents through events and performances, and promote cross-cultural understanding.', rating=4.9, members=320),
-            Club(name='Book Club', logo='book.png', bio='A cozy community for bookworms to discover new reads, share insights, and dive into thought-provoking discussions.', rating=4.5, members=200),
+            Club(name='Computer Club', logo='computer.png', bio='A community for tech enthusiasts to collaborate on projects, participate in hackathons and share a skill space with the like-minded.', rating=4.8, members=450, email='computer@gmail.com'),
+            Club(name='Research Club', logo='research.png', bio='A hub for curious minds to explore innovative ideas, collaborate on research projects, and engage in academic discussions across disciplines.', rating=4.2, members=422, email='research@gmail.com'),
+            Club(name='Cultural Club', logo='cultural.png', bio='A vibrant space to celebrate diverse traditions, showcase talents through events and performances, and promote cross-cultural understanding.', rating=4.9, members=320, email='cultural@gmail.com'),
+            Club(name='Book Club', logo='book.png', bio='A cozy community for bookworms to discover new reads, share insights, and dive into thought-provoking discussions.', rating=4.5, members=200, email='book@gmail.com'),
         ]
         db.session.add_all(clubs)
         db.session.commit()
@@ -765,6 +766,7 @@ def manage_club(club_id=None):
         club.bio = request.form.get('bio')
         club.rating = float(request.form.get('rating') or 0)
         club.members = int(request.form.get('members') or 0)
+        club.email = request.form.get('email')
 
         db.session.add(club)
         db.session.commit()

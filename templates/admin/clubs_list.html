@@ -10,6 +10,7 @@
             <th>Logo</th>
             <th>Rating</th>
             <th>Members</th>
+            <th>Email</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -22,6 +23,7 @@
             </td>
             <td>{{ club.rating }}</td>
             <td>{{ club.members }}</td>
+            <td>{{ club.email }}</td>
             <td>
                 <a href="{{ url_for('manage_club', club_id=club.id) }}" class="btn btn-sm btn-primary">Edit</a>
                 <form action="{{ url_for('delete_club', club_id=club.id) }}" method="POST" style="display:inline;">

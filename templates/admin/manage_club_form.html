@@ -24,6 +24,10 @@
         <label>Members</label>
         <input type="number" name="members" class="form-control" value="{{ club.members or 0 }}">
     </div>
+    <div class="mb-3">
+        <label>Email</label>
+        <input type="email" name="email" class="form-control" value="{{ club.email or '' }}">
+    </div>
     <button type="submit" class="btn btn-primary">Save</button>
     <a href="{{ url_for('admin_view_club') }}" class="btn btn-secondary">Cancel</a>
 </form>
