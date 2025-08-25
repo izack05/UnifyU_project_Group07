@@ -88,6 +88,19 @@ class StudentRegistration(db.Model, UserMixin):
     balance = db.Column(db.Integer, nullable=False, default=0)
     
 
+    # Relationships
+    reported_issues = db.relationship(
+        "IssueLog",
+        foreign_keys="IssueLog.student_id",
+        back_populates="student"
+    )
+    resolved_issues = db.relationship(
+        "IssueLog",
+        foreign_keys="IssueLog.resolved_by",
+        back_populates="staff"
+    )
+    
+
 
 class StudentAdmin(ModelView):
     column_list = ('id', 'full_name', 'username', 'email', 'gender', 'is_verified', 'is_staff')
@@ -245,7 +258,7 @@ class IssueLog(db.Model):
     issue_title = db.Column(db.String(200), nullable=False)
     issue_category = db.Column(db.String(50), nullable=False)
     issue_description = db.Column(db.Text, nullable=False)
-    floor = db.Column(db.String(3), nullable=False)  # New field for floor
+    floor = db.Column(db.String(3), nullable=False, default='1')  # New field for floor
     location = db.Column(db.String(100), nullable=False)
     priority = db.Column(db.String(20), nullable=False, default='Medium')
     status = db.Column(db.String(20), nullable=False, default='Reported')  # Changed default from 'Open'
@@ -257,8 +270,19 @@ class IssueLog(db.Model):
     student = db.relationship('StudentRegistration', backref=db.backref('issues', lazy=True), foreign_keys=[student_id])
     staff = db.relationship('StudentRegistration', backref=db.backref('resolved_issues', lazy=True), foreign_keys=[resolved_by])
 
-    
+    student_id = db.Column(db.Integer, db.ForeignKey('student_registration.id', name='fk_issue_log_student'), nullable=False)
+    resolved_by = db.Column(db.Integer, db.ForeignKey('student_registration.id', name='fk_issue_log_resolved_by'), nullable=True)
 
+    student = db.relationship(
+        'StudentRegistration',
+        foreign_keys=[student_id],
+        back_populates="reported_issues"
+    )
+    staff = db.relationship(
+        'StudentRegistration',
+        foreign_keys=[resolved_by],
+        back_populates="resolved_issues"
+    )
 
 
 
@@ -353,7 +377,7 @@ def userprofile():
 
     if request.method == "POST":
         name_to_update.full_name = request.form['full_name']
-        name_to_update.id = request.form['id']
+        #name_to_update.id = request.form['id']
         name_to_update.username = request.form['username']
         name_to_update.email = request.form['email']
         name_to_update.gender = request.form['gender']
