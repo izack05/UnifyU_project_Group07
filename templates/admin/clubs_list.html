@@ -1,0 +1,39 @@
+{% extends "layout/base.html" %}
+
+{% block content %}
+<h2 class="page-header">All Clubs</h2>
+
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Logo</th>
+            <th>Rating</th>
+            <th>Members</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for club in clubs %}
+        <tr>
+            <td>{{ club.name }}</td>
+            <td>
+                <img src="{{ url_for('static', filename='logos/' ~ club.logo) }}" alt="Logo" height="40">
+            </td>
+            <td>{{ club.rating }}</td>
+            <td>{{ club.members }}</td>
+            <td>
+                <a href="{{ url_for('manage_club', club_id=club.id) }}" class="btn btn-sm btn-primary">Edit</a>
+                <form action="{{ url_for('delete_club', club_id=club.id) }}" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="mt-4">
+    <a href="{{ url_for('manage_club') }}" class="btn btn-success">Add New Club</a>
+</div>
+{% endblock %}
