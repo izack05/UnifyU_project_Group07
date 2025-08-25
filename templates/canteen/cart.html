@@ -12,10 +12,15 @@
     .flash.warning { background:#fff7e6; border-color:#ffe2a8; color:#8a5d00; }
 
     /* Table + buttons */
-    .qty-btn { padding:4px 10px; }
-    .remove-btn { padding:4px 10px; color:red; background:transparent; border:1px solid #ddd; border-radius:4px; cursor:pointer; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 10px; border: 1px solid #ddd; }
+    th { background: #f2f2f2; text-align: left; }
+    .qty-btn { padding: 4px 10px; cursor: pointer; }
+    .remove-btn { padding: 4px 10px; color: red; background: transparent; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; }
     .confirm-btn { background:#2e2e54; color:white; padding:10px 20px; border:none; border-radius:6px; cursor:pointer; }
     .confirm-btn:hover { background:#454270; }
+    .back-btn { background:#888; color:white; padding:10px 20px; border:none; border-radius:6px; text-decoration:none; display:inline-block; margin-bottom: 20px; }
+    .back-btn:hover { background:#666; }
     .disabled { opacity: .6; cursor: not-allowed; }
   </style>
 
@@ -32,27 +37,26 @@
     {% endif %}
   {% endwith %}
 
+  <!-- Back to Canteen -->
+  <a href="{{ url_for('canteen_home') }}" class="back-btn">← Back to Canteen</a>
+
   {% if cart %}
-    <table style="width:100%; border-collapse:collapse; margin-top:20px;">
+    <table>
       <thead>
-        <tr style="background:#f2f2f2;">
-          <th style="padding:10px; border:1px solid #ddd; text-align:left;">Item</th>
-          <th style="padding:10px; border:1px solid #ddd; text-align:right;">Price (BDT)</th>
-          <th style="padding:10px; border:1px solid #ddd; text-align:center;">Quantity</th>
-          <th style="padding:10px; border:1px solid #ddd; text-align:right;">Subtotal (BDT)</th>
-          <th style="padding:10px; border:1px solid #ddd; text-align:center;">Action</th>
+        <tr>
+          <th>Item</th>
+          <th style="text-align:right;">Price (BDT)</th>
+          <th style="text-align:center;">Quantity</th>
+          <th style="text-align:right;">Subtotal (BDT)</th>
+          <th style="text-align:center;">Action</th>
         </tr>
       </thead>
       <tbody>
         {% for item in cart %}
         <tr>
-          <td style="padding:10px; border:1px solid #ddd;">{{ item.name }}</td>
-
-          <td style="padding:10px; border:1px solid #ddd; text-align:right;">
-            {{ "%.2f"|format(item.price) }}
-          </td>
-
-          <td style="padding:10px; border:1px solid #ddd; text-align:center;">
+          <td>{{ item.name }}</td>
+          <td style="text-align:right;">{{ "%.2f"|format(item.price) }}</td>
+          <td style="text-align:center;">
             <!-- Decrease -->
             <form action="{{ url_for('update_cart', food_id=item.id) }}" method="POST" style="display:inline;">
               {% if csrf_token %}{{ csrf_token() }}{% endif %}
@@ -69,12 +73,8 @@
               <button type="submit" class="qty-btn">+</button>
             </form>
           </td>
-
-          <td style="padding:10px; border:1px solid #ddd; text-align:right;">
-            {{ "%.2f"|format(item.price * item.quantity) }}
-          </td>
-
-          <td style="padding:10px; border:1px solid #ddd; text-align:center;">
+          <td style="text-align:right;">{{ "%.2f"|format(item.price * item.quantity) }}</td>
+          <td style="text-align:center;">
             <!-- Remove -->
             <form action="{{ url_for('update_cart', food_id=item.id) }}" method="POST" style="display:inline;">
               {% if csrf_token %}{{ csrf_token() }}{% endif %}
@@ -98,6 +98,6 @@
   {% else %}
     <p>Your cart is empty. Go to <a href="{{ url_for('canteen_home') }}">Canteen</a> to add items.</p>
   {% endif %}
+
 </div>
 {% endblock %}
-
