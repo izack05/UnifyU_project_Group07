@@ -92,6 +92,25 @@
 </a>
 {% endblock %}
 
+{# --- Main Navbar Menu --- #}
+{% block main_menu %}
+<ul class="navbar-nav mr-auto">
+    <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('admin.index') }}">Home</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/admin/studentregistration/">Users</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/admin/fooditem/">Food Items</a>
+    </li>
+     <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('actions.index') }}">Club Actions</a>
+    </li>
+
+</ul>
+{% endblock %}
+
 {% block body %}
     <h2 class="page-header">Campus Club Actions</h2>
 

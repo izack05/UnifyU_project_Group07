@@ -31,10 +31,6 @@
           <a class="nav-link btn btn-outline-primary mx-1" aria-current="page" href="{{ url_for('admin.index') }}" style="color: #ece3e3">Admin Panel</a>
         </li>
 
-        <li class="nav-item">
-          <a class="nav-link btn btn-outline-primary mx-1" aria-current="page" href="{{ url_for('addevent') }}" style="color: #ece3e3">Add Event</a>
-        </li>
-
         {% endif %}
         <li class="nav-item">
           <a class="nav-link btn btn-outline-primary mx-1" aria-current="page" href="{{ url_for('homepage') }}" style="color: #ece3e3">Home</a>
@@ -57,7 +53,7 @@
           <ul class="dropdown-menu dropdown-menu-end">
             <li><a class="dropdown-item" href="{{ url_for('userprofile') }}">View Profile</a></li>
             <li><a class="dropdown-item" href="{{ url_for('view_issues') }}">My Issues</a></li>
-            <li><a class="dropdown-item" href="#">Settings</a></li>
+            <!-- <li><a class="dropdown-item" href="#">Settings</a></li> -->
             <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
           </ul>
         </li>
