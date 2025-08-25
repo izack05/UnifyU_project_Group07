@@ -48,7 +48,7 @@
         </li> -->
         {% if current_user.is_authenticated %}
         <li class="nav-item">
-          <a class="nav-link btn btn-outline-primary mx-1" href="#" style="color: #ece3e3">Balance</a>
+            <a class="nav-link btn btn-outline-primary mx-1" href="{{ url_for('balance') }}" style="color: #ece3e3">Balance</a>
         </li>
         <li class="nav-item dropdown">
           <a class="nav-link btn btn-outline-primary mx-1 dropdown-toggle" href="#" style="color: #ece3e3" role="button" data-bs-toggle="dropdown" aria-expanded="false">

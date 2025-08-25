@@ -85,6 +85,7 @@ class StudentRegistration(db.Model, UserMixin):
     is_verified = db.Column(db.Boolean, default = False)
     is_staff = db.Column(db.Boolean, default = False)
     is_admin = db.Column(db.Boolean, default = False)
+    balance = db.Column(db.Integer, nullable=False, default=0)
     
 
 
@@ -627,6 +628,27 @@ def add_event():
     return redirect(url_for('club_detail', club_id=club_id))
 
 
+
+@app.route('/balance', methods=['GET', 'POST'])
+@login_required
+def balance():
+    student = StudentRegistration.query.get(current_user.id)
+    if not student:
+        return redirect(url_for('homepage'))
+
+    if request.method == 'POST':
+        try:
+            amount = int(request.form.get('amount', 0))
+            if amount > 0:
+                student.balance += amount
+                db.session.commit()
+            else:
+                flash("Enter a valid amount.", "warning")
+        except ValueError:
+            flash("Invalid input.", "warning")
+        return redirect(url_for('balance'))
+
+    return render_template('club/user_balance.html', student=student)
 
 
 
