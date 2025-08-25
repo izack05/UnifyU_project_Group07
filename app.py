@@ -1,7 +1,7 @@
 from flask import Flask, request, render_template, redirect, request, flash, url_for, session, jsonify, get_flashed_messages
 from wtforms import BooleanField, TextAreaField
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import text, func
+from sqlalchemy import text, func, inspect
 from flask_admin import Admin, AdminIndexView, BaseView, expose
 from flask_admin.contrib.sqla import ModelView
 from flask_mail import Mail, Message
@@ -152,12 +152,16 @@ class Club(db.Model):
     events = db.relationship('Event', backref='club', lazy=True)
 
 def seed_clubdata():
+    inspector = inspect(db.engine)
+    columns = [col['name'] for col in inspector.get_columns('club')]
+    if 'email' not in columns:
+        return
     if not Club.query.first():
         clubs = [
-            Club(name='Computer Club', logo='computer.png', bio='A community for tech enthusiasts to collaborate on projects, participate in hackathons and share a skill space with the like-minded.', rating=4.8, members=450, email='computer@gmail.com'),
+            Club(name='Computer Club', logo='computer.png', bio='A community for tech enthusiasts to collaborate on projects, participate in hackathons and share a skill space with the like-minded.', rating=4.8, members=450, email='computerclub.unifyu@gmail.com'),
             Club(name='Research Club', logo='research.png', bio='A hub for curious minds to explore innovative ideas, collaborate on research projects, and engage in academic discussions across disciplines.', rating=4.2, members=422, email='research@gmail.com'),
             Club(name='Cultural Club', logo='cultural.png', bio='A vibrant space to celebrate diverse traditions, showcase talents through events and performances, and promote cross-cultural understanding.', rating=4.9, members=320, email='cultural@gmail.com'),
-            Club(name='Book Club', logo='book.png', bio='A cozy community for bookworms to discover new reads, share insights, and dive into thought-provoking discussions.', rating=4.5, members=200, email='book@gmail.com'),
+            Club(name='Book Club', logo='book.png', bio='A cozy community for bookworms to discover new reads, share insights, and dive into thought-provoking discussions.', rating=4.5, members=200, email='bookclub.unifyu@gmail.com'),
         ]
         db.session.add_all(clubs)
         db.session.commit()
