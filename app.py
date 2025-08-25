@@ -329,7 +329,7 @@ class MyAdminIndexView(AdminIndexView):
             club_member_count.append(club.members)
         max_club_members = max(club_member_count)
 
-        #club_application_count_by_clubs
+        #club application count by clubs
         application_counts = (
                 db.session.query(clubapp.club_id, func.count(clubapp.id))
                 .group_by(clubapp.club_id)
