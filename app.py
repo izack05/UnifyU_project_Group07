@@ -722,86 +722,104 @@ from collections import defaultdict
 
 
 
+
 @app.route('/canteen')
 def canteen_home():
-    # Fetch all items as you do now
+    # Fetch all items
     items = FoodItem.query.all()
 
-    # Group by category
+    # Get filters from query params
+    selected_category = request.args.get('category', '').strip()
+    search_query = request.args.get('q', '').strip().lower()
+    min_price = request.args.get('min_price', '').strip()
+    max_price = request.args.get('max_price', '').strip()
+
+    # Convert price filters to float if possible
+    try:
+        min_price = float(min_price) if min_price else None
+    except ValueError:
+        min_price = None
+
+    try:
+        max_price = float(max_price) if max_price else None
+    except ValueError:
+        max_price = None
+
+    # Group items by category after filtering
     grouped_items = defaultdict(list)
     for item in items:
+        # Search filter
+        if search_query and not (search_query in item.name.lower() or (item.description and search_query in item.description.lower())):
+            continue
+
+        # Price filter
+        if (min_price is not None and item.price < min_price) or (max_price is not None and item.price > max_price):
+            continue
+
+        # Category filter (applied later globally)
         grouped_items[item.category].append(item)
 
-    # Categories derived from keys
+    # Apply category filter if selected
     categories = list(grouped_items.keys())
-
-    # Selected category (optional)
-    selected = request.args.get('category', '').strip()
-    if selected and selected in categories:
-        # Narrow down to the selected category only
+    if selected_category and selected_category in categories:
         filtered_grouped = defaultdict(list)
-        filtered_grouped[selected] = grouped_items[selected][:]
+        filtered_grouped[selected_category] = grouped_items[selected_category][:]
         grouped_items = filtered_grouped
-        categories = [selected]
+        categories = [selected_category]
     else:
-        selected = ""
+        selected_category = ""
 
-    # Search query
-    q = request.args.get('q', '').strip().lower()
-    if q:
-        # Filter items within each category
-        for cat in list(grouped_items.keys()):
-            grouped_items[cat] = [
-                it for it in grouped_items[cat]
-                if q in it.name.lower() or (it.description and q in it.description.lower())
-            ]
-        # Remove empty categories after filtering
-        grouped_items = defaultdict(list, {c: lst for c, lst in grouped_items.items() if lst})
-
-        # If selected category became empty, reset to show "no results"
-        if selected and selected not in grouped_items:
-            grouped_items[selected] = []
-
+    # Cart info
     cart = session.get('cart', [])
+    total_quantity = sum(item['quantity'] for item in cart)
+
     return render_template(
         'canteen/canteen_home.html',
         grouped_items=grouped_items,
         cart=cart,
-        categories=list(grouped_items.keys()),  # update after filtering
-        selected_category=selected,
-        search_query=request.args.get('q', '').strip()
+        total_quantity=total_quantity,
+        categories=categories,
+        selected_category=selected_category,
+        search_query=search_query,
+        min_price=min_price,
+        max_price=max_price
     )
 
 
-@app.route('/add_to_cart/<int:food_id>', methods=['POST'])
+@app.route('/canteen_item/<int:food_id>', methods=['POST'])
 @login_required
-def add_to_cart(food_id):
+def canteen_item(food_id):
     item = FoodItem.query.get_or_404(food_id)
-    cart = session.get('cart', [])
+    action = request.form.get('action')  # 'increase', 'decrease', 'add'
+    key = f'temp_qty_{food_id}'
+    qty = session.get(key, 0)
 
-    # Check if item exists in cart
-    for c in cart:
-        if c['id'] == item.id:
-            if c['quantity'] < item.stock:
-                c['quantity'] += 1
-                flash(f"✅ {item.name} quantity updated in cart!", "success")
-            else:
-                flash(f"⚠️ Cannot add more {item.name}, stock limit reached.", "warning")
-            break
-    else:
-        if item.stock > 0:
-            cart.append({
-                'id': item.id,
-                'name': item.name,
-                'price': item.price,
-                'quantity': 1
-            })
-            flash(f"✅ {item.name} added to cart!", "success")
+    if action == 'increase':
+        qty = min(qty + 1, item.stock)
+    elif action == 'decrease' and qty > 0:
+        qty -= 1
+    elif action == 'add':
+        if qty <= 0:
+            flash(f"⚠️ Please select a quantity for {item.name}.", "warning")
         else:
-            flash(f"⚠️ {item.name} is out of stock!", "warning")
+            # Add to cart
+            cart = session.get('cart', [])
+            cart_item = next((c for c in cart if c['id'] == item.id), None)
+            if cart_item:
+                cart_item['quantity'] = min(cart_item['quantity'] + qty, item.stock)
+            else:
+                cart.append({
+                    'id': item.id,
+                    'name': item.name,
+                    'price': item.price,
+                    'quantity': min(qty, item.stock)
+                })
+            session['cart'] = cart
+            flash(f"✅ {item.name} added to cart!", "success")
+        qty = 0  # reset temp counter after adding
 
-    session['cart'] = cart
-    return redirect(url_for('canteen_home'))
+    session[key] = qty
+    return redirect(request.referrer or url_for('canteen_home'))
 
 @app.route('/update_cart/<int:food_id>', methods=['POST'])
 @login_required
@@ -816,7 +834,7 @@ def update_cart(food_id):
             elif action == 'decrease':
                 item['quantity'] -= 1
                 if item['quantity'] <= 0:
-                    cart.remove(item)  # remove if qty goes to 0
+                    cart.remove(item)
             elif action == 'remove':
                 cart.remove(item)
             break
@@ -824,20 +842,16 @@ def update_cart(food_id):
     session['cart'] = cart
     return redirect(url_for('cart'))
 
-
 @app.route('/cart')
 @login_required
 def cart():
     cart = session.get('cart', [])
-
-    # Ensure all items have quantity ≥ 1
+    # Ensure all quantities ≥ 1
     for item in cart:
         if 'quantity' not in item or item['quantity'] < 1:
             item['quantity'] = 1
 
-    session['cart'] = cart  # update session
-
-    # Calculate total
+    session['cart'] = cart
     total = sum(item['price'] * item['quantity'] for item in cart)
 
     return render_template('canteen/cart.html', cart=cart, total=total)
@@ -846,7 +860,6 @@ def cart():
 @login_required
 def invoice():
     last_order = session.get('last_order')
-
     if not last_order:
         flash("❌ No recent order found.", "danger")
         return redirect(url_for('canteen_home'))
@@ -857,12 +870,10 @@ def invoice():
 
     return render_template('canteen/invoice.html', items=items, subtotal=subtotal, total=total)
 
-
 @app.route('/confirm_order', methods=['POST'])
 @login_required
 def confirm_order():
     cart = session.get('cart', [])
-
     if not cart:
         flash("❌ Your cart is empty.", "danger")
         return redirect(url_for('cart'))
@@ -879,12 +890,6 @@ def confirm_order():
 
     db.session.commit()
 
-    updated_items = FoodItem.query.all()
-    for item in updated_items:
-        print(f"{item.name}: {item.stock} left in stock")  # prints to server console
-
-
-    # Calculate total
     total = sum(item['price'] * item['quantity'] for item in cart)
 
     # Save last order in session for invoice
@@ -898,6 +903,7 @@ def confirm_order():
 
     flash("✅ Order confirmed successfully!", "success")
     return redirect(url_for('invoice'))
+
 
 #---------------Nur Routes---------------------
 
