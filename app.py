@@ -302,10 +302,6 @@ admin.add_view(FoodItemAdmin(FoodItem, db.session, name="Food Items"))
 admin.add_view(MyButtonsView(name="Club Actions", endpoint="actions"))
 
 
-@app.route("/page1")
-def page1():
-    return "<h1>Page 1</h1>"
-
 
 # Route decorators
 #please make sure that you add @login_required decorator after every @app.route and before the funciton
@@ -649,6 +645,69 @@ def balance():
         return redirect(url_for('balance'))
 
     return render_template('club/user_balance.html', student=student)
+
+
+
+@app.route('/admin/clubs')
+@login_required
+def admin_view_club():
+    if not current_user.is_admin:
+        return redirect(url_for('homepage'))
+
+    clubs = Club.query.order_by(Club.name).all()
+    return render_template('admin/clubs_list.html', clubs=clubs)
+
+
+
+
+@app.route('/admin/club', methods=['GET', 'POST'])
+@app.route('/admin/club/<int:club_id>', methods=['GET', 'POST'])
+@login_required
+def manage_club(club_id=None):
+    if not current_user.is_admin:
+        return redirect(url_for('homepage'))
+
+    club = Club.query.get(club_id) if club_id else Club()
+
+    if request.method == 'POST':
+        club.name = request.form['name']
+        club.logo = request.form.get('logo')
+        club.bio = request.form.get('bio')
+        club.rating = float(request.form.get('rating') or 0)
+        club.members = int(request.form.get('members') or 0)
+
+        db.session.add(club)
+        db.session.commit()
+        return redirect(url_for('admin_view_club'))
+
+    return render_template('admin/manage_club_form.html', club=club)
+
+
+@app.route('/admin/club/delete/<int:club_id>', methods=['POST'])
+@login_required
+def delete_club(club_id):
+    if not current_user.is_admin:
+        return redirect(url_for('homepage'))
+
+    club = Club.query.get_or_404(club_id)
+
+    events = Event.query.filter_by(club_id=club.id).all()
+    for event in events:
+        db.session.delete(event)
+
+    db.session.delete(club)
+    db.session.commit()
+    return redirect(url_for('admin_view_club'))
+
+
+
+
+
+
+
+
+
+
 
 
 
