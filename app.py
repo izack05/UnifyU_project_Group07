@@ -1,7 +1,7 @@
 from flask import Flask, request, render_template, redirect, request, flash, url_for, session, jsonify, get_flashed_messages
 from wtforms import BooleanField, TextAreaField
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import text
+from sqlalchemy import text, func
 from flask_admin import Admin, AdminIndexView, BaseView, expose
 from flask_admin.contrib.sqla import ModelView
 
@@ -308,12 +308,76 @@ class MyAdminIndexView(AdminIndexView):
 
     def inaccessible_callback(self, name, **kwargs):
         return redirect(url_for("homepage"))
+    @expose("/")
+    def index(self):
+
+        # user type count
+        total =  db.session.query(func.count(StudentRegistration.id)).scalar()
+        admin_count = db.session.query(func.count(StudentRegistration.id)).filter_by(is_admin=True).scalar()
+        staff_count = db.session.query(func.count(StudentRegistration.id)).filter_by(is_staff=True).scalar()
+        student_count = total - (admin_count + staff_count)
+        verified_student_count = db.session.query(func.count(StudentRegistration.id)).filter_by(is_verified=True).scalar()
+        unverified_student_count = db.session.query(func.count(StudentRegistration.id)).filter_by(is_staff=False).scalar()
+
+        #club info counts
+        clubs = Club.query.order_by(Club.name).all()
+        club_names = []
+        club_member_count = []  
+        for club in clubs:
+            club_names.append(club.name)
+            club_member_count.append(club.members)
+        max_club_members = max(club_member_count)
+
+        #club_application_count_by_clubs
+        application_counts = (
+                db.session.query(clubapp.club_id, func.count(clubapp.id))
+                .group_by(clubapp.club_id)
+                .all()
+            )
+        
+        club_app_name = []
+        club_app_count = []
+        for club_id, count in application_counts:
+            club = Club.query.get(club_id)
+            if club:
+                club_app_name.append(club.name)
+                club_app_count.append(count)
+
+        # issue-log-status count
+        reported_count = db.session.query(func.count(IssueLog.id)).filter_by(status="Reported").scalar()
+        on_process_count = db.session.query(func.count(IssueLog.id)).filter_by(status="On Process").scalar()
+        solved_count = db.session.query(func.count(IssueLog.id)).filter_by(status="Solved").scalar()
+
+        return self.render(
+            "admin/index.html",
+            total = total, 
+            admin_count = admin_count,
+            staff_count = staff_count,
+            student_count = student_count,
+            verified_students_count = verified_student_count,
+            unverified_students_count = unverified_student_count,
+
+            club_names = club_names,
+            club_member_count = club_member_count,
+            max_club_members = max_club_members + 50,
+
+            club_app_name = club_app_name,
+            club_app_count = club_app_count,
+
+            reported=reported_count,
+            on_process=on_process_count,
+            solved=solved_count
+        )
+    
+
     
 
 class MyButtonsView(BaseView):
     @expose('/')
+    @login_required
     def index(self):
         return self.render('admin/club_buttons.html')
+
     
 
 # class StudentRegistrationView(BaseView):
