@@ -4,12 +4,13 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text, func
 from flask_admin import Admin, AdminIndexView, BaseView, expose
 from flask_admin.contrib.sqla import ModelView
+from flask_mail import Mail, Message
 
 from flask_login import UserMixin, LoginManager, login_user, login_required, logout_user, current_user
 
 from flask_migrate import Migrate
 
-from sk import flask_sk, ai_key
+from sk import flask_sk, ai_key, DEL_EMAIL, MAIL_PASSWORD
 from werkzeug.security import generate_password_hash, check_password_hash
 #from flask_seasurf import SeaSurf
 
@@ -55,6 +56,30 @@ login_manager.login_message = "Please login to access this page!"
 def unauthorized():
     flash('Please login to access this page!', 'error')
     return redirect(url_for('login'))
+
+
+
+
+
+
+
+
+
+#-----------Mail-------------------#
+
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USERNAME'] = DEL_EMAIL
+app.config['MAIL_PASSWORD'] = MAIL_PASSWORD
+
+mail=Mail(app)
+
+
+
+
+
 
 
 #-----------Model Template------------------------------- --> these are tables
@@ -791,6 +816,47 @@ def delete_club(club_id):
     db.session.commit()
     return redirect(url_for('admin_view_club'))
 
+
+@app.route("/send_applications", methods=["POST"])
+@login_required
+def send_applications():
+    app_ids = request.form.getlist("app_ids")
+    applications = clubapp.query.filter(clubapp.id.in_(app_ids)).all()
+
+    if not applications:
+        return redirect(url_for("show_club_applications"))
+
+   
+    club_email = applications[0].club.email  
+
+
+    body = ""
+    for app in applications:
+        body += f"""
+Student Name: {app.name}
+Student ID: {app.studid}
+Email: {app.email}
+Phone: {app.phone}
+Interests: {app.interests}
+Skills: {app.skills}
+Club: {app.club.name}
+-----------------------
+"""
+
+
+    msg = Message(
+        subject="New Club Applications",
+        sender=DEL_EMAIL,
+        recipients=[club_email] 
+    )
+    msg.body = body
+    mail.send(msg)
+
+    for app in applications:
+        db.session.delete(app)
+    db.session.commit()
+
+    return redirect(url_for("show_club_applications"))
 
 
 

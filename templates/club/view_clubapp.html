@@ -45,7 +45,7 @@
         </table>
 
         <!-- Club-wise Send Button -->
-        <form action="{{ url_for('homepage') }}" method="post" style="margin-top:10px;">
+        <form action="{{ url_for('send_applications') }}" method="post" style="margin-top:10px;">
             {% for app in apps %}
             <input type="hidden" name="app_ids" value="{{ app.id }}">
             {% endfor %}
