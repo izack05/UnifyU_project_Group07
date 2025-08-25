@@ -257,6 +257,8 @@ class IssueLog(db.Model):
     student = db.relationship('StudentRegistration', backref=db.backref('issues', lazy=True), foreign_keys=[student_id])
     staff = db.relationship('StudentRegistration', backref=db.backref('resolved_issues', lazy=True), foreign_keys=[resolved_by])
 
+    
+
 
 
 
