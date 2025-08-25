@@ -85,6 +85,7 @@ class StudentRegistration(db.Model, UserMixin):
     is_verified = db.Column(db.Boolean, default = False)
     is_staff = db.Column(db.Boolean, default = False)
     is_admin = db.Column(db.Boolean, default = False)
+    balance = db.Column(db.Integer, nullable=False, default=0)
     
 
 
@@ -628,6 +629,27 @@ def add_event():
 
 
 
+@app.route('/balance', methods=['GET', 'POST'])
+@login_required
+def balance():
+    student = StudentRegistration.query.get(current_user.id)
+    if not student:
+        return redirect(url_for('homepage'))
+
+    if request.method == 'POST':
+        try:
+            amount = int(request.form.get('amount', 0))
+            if amount > 0:
+                student.balance += amount
+                db.session.commit()
+            else:
+                flash("Enter a valid amount.", "warning")
+        except ValueError:
+            flash("Invalid input.", "warning")
+        return redirect(url_for('balance'))
+
+    return render_template('club/user_balance.html', student=student)
+
 
 
 #---------------Sanjida Routes-----------------
@@ -877,6 +899,16 @@ def confirm_order():
     if not cart:
         flash("❌ Your cart is empty.", "danger")
         return redirect(url_for('cart'))
+    
+    student = StudentRegistration.query.get(current_user.id)
+    if not student:
+        return redirect(url_for('cart'))
+    
+    total = sum(item['price'] * item['quantity'] for item in cart)
+
+    if student.balance < total:
+        flash("❌ Insufficient balance. Please top up first.", "warning")
+        return redirect(url_for('cart'))
 
     # Deduct stock
     for item in cart:
@@ -887,10 +919,15 @@ def confirm_order():
         else:
             flash(f"⚠️ Not enough stock for {item['name']}.", "warning")
             return redirect(url_for('cart'))
+        
+    student.balance -= total
+    db.session.add(student)
 
     db.session.commit()
 
-    total = sum(item['price'] * item['quantity'] for item in cart)
+    updated_items = FoodItem.query.all()
+    for item in updated_items:
+        print(f"{item.name}: {item.stock} left in stock")  # prints to server console
 
     # Save last order in session for invoice
     session['last_order'] = {
