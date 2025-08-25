@@ -249,6 +249,15 @@ def seed_fooddata():
         db.session.add_all(foods)
         db.session.commit()
 
+class BankAccount(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(100), nullable=False)
+    balance = db.Column(db.Float, default=5000.0)
+
+    student_id = db.Column(db.Integer, db.ForeignKey('student_registration.id'), unique=True)
+    student = db.relationship('StudentRegistration', backref=db.backref('bank_account', uselist=False))
+
 
 
 #---------Nur classess------------------
@@ -524,6 +533,17 @@ def registration_student():
     db.session.add(registered_student_row)
     db.session.commit()
 
+    new_bank = BankAccount(
+        name=registered_student_row.full_name,
+        email=registered_student_row.email,
+        balance=5000.0,
+        student_id=registered_student_row.id
+    )
+
+    db.session.add(new_bank)
+
+    db.session.commit()
+
     flash("Registration successful!", "success")
     return redirect('/login')
 
@@ -715,27 +735,15 @@ def add_event():
 
 
 
-@app.route('/balance', methods=['GET', 'POST'])
+@app.route('/balance')
 @login_required
 def balance():
     student = StudentRegistration.query.get(current_user.id)
     if not student:
+        flash("Student not found!", "error")
         return redirect(url_for('homepage'))
-
-    if request.method == 'POST':
-        try:
-            amount = int(request.form.get('amount', 0))
-            if amount > 0:
-                student.balance += amount
-                db.session.commit()
-            else:
-                flash("Enter a valid amount.", "warning")
-        except ValueError:
-            flash("Invalid input.", "warning")
-        return redirect(url_for('balance'))
-
-    return render_template('club/user_balance.html', student=student)
-
+    bank = student.bank_account  # still needed for add/withdraw
+    return render_template('club/user_balance.html', student=student, bank=bank)
 
 
 @app.route('/admin/clubs')
@@ -1089,6 +1097,72 @@ def confirm_order():
 
     flash("✅ Order confirmed successfully!", "success")
     return redirect(url_for('invoice'))
+
+@app.route('/balance/add', methods=['GET', 'POST'])
+@login_required
+def add_credit():
+    student = StudentRegistration.query.get(current_user.id)
+
+    # Auto-create bank account if missing
+    bank = student.bank_account
+    if not bank:
+        bank = BankAccount(
+            name=student.full_name,
+            email=student.email,
+            balance=5000.0,  # default starting balance
+            student_id=student.id
+        )
+        db.session.add(bank)
+        db.session.commit()
+        
+
+    if request.method == 'POST':
+        try:
+            amount = float(request.form.get('amount', 0))
+            if amount <= 0:
+                flash("Enter a valid positive amount.", "warning")
+            elif amount > bank.balance:
+                flash("Bank doesn't have enough balance.", "warning")
+            else:
+                student.balance += amount
+                bank.balance -= amount
+                db.session.commit()
+                flash(f"{amount} ৳ added successfully!", "success")
+                # Stay on the same page instead of redirecting
+        except ValueError:
+            flash("Invalid input.", "warning")
+
+    return render_template('balance/add_credit.html', student=student, bank=bank)
+
+
+@app.route('/balance/withdraw', methods=['GET', 'POST'])
+@login_required
+def withdraw_credit():
+    student = StudentRegistration.query.get(current_user.id)
+    bank = student.bank_account
+
+    if not student or not bank:
+        flash("Bank account not found!", "error")
+        return redirect(url_for('balance'))
+
+    if request.method == 'POST':
+        try:
+            amount = float(request.form.get('amount', 0))
+            if amount <= 0:
+                flash("Enter a valid positive amount.", "warning")
+            elif amount > student.balance:
+                flash("You don't have enough balance to withdraw.", "warning")
+            else:
+                student.balance -= amount
+                bank.balance += amount
+                db.session.commit()
+                flash(f"{amount} ৳ has been withdrawn successfully!", "success")
+                # Stay on the same page to show flash message
+        except ValueError:
+            flash("Invalid input.", "warning")
+
+    return render_template('balance/withdraw_credit.html', student=student)
+
 
 
 #---------------Nur Routes---------------------
