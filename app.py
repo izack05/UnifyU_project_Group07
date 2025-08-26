@@ -309,7 +309,7 @@ class Transaction(db.Model):
 #---------Nur classess------------------
 class IssueLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    student_id = db.Column(db.Integer, db.ForeignKey('student_registration.id'), nullable=False)
+    student_id = db.Column(db.Integer, db.ForeignKey('student_registration.id', name='fk_issue_log_student'), nullable=False)
     issue_title = db.Column(db.String(200), nullable=False)
     issue_category = db.Column(db.String(50), nullable=False)
     issue_description = db.Column(db.Text, nullable=False)
@@ -320,14 +320,13 @@ class IssueLog(db.Model):
     submitted_at = db.Column(db.DateTime, nullable=False, default=datetime.now)
     resolved_at = db.Column(db.DateTime, nullable=True)
     staff_notes = db.Column(db.Text, nullable=True)
-    resolved_by = db.Column(db.Integer, db.ForeignKey('student_registration.id'), nullable=True)
+    resolved_by = db.Column(db.Integer, db.ForeignKey('student_registration.id', name='fk_issue_log_resolved_by'), nullable=True)
     is_new = db.Column(db.Boolean, nullable=False, default=True)  # New: track if issue is new for staff
 
-    student = db.relationship('StudentRegistration', backref=db.backref('issues', lazy=True), foreign_keys=[student_id])
-    staff = db.relationship('StudentRegistration', backref=db.backref('resolved_issues', lazy=True), foreign_keys=[resolved_by])
+    # student = db.relationship('StudentRegistration', backref=db.backref('issues', lazy=True), foreign_keys=[student_id])
+    # staff = db.relationship('StudentRegistration', backref=db.backref('resolved_issues', lazy=True), foreign_keys=[resolved_by])
 
-    student_id = db.Column(db.Integer, db.ForeignKey('student_registration.id', name='fk_issue_log_student'), nullable=False)
-    resolved_by = db.Column(db.Integer, db.ForeignKey('student_registration.id', name='fk_issue_log_resolved_by'), nullable=True)
+    
 
     student = db.relationship(
         'StudentRegistration',
