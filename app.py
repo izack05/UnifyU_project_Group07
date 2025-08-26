@@ -168,9 +168,9 @@ def seed_clubdata():
 
 class clubapp(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    studid = db.Column(db.Integer, unique=True, nullable=False)
-    email= db.Column(db.String(100), unique=True, nullable=False)
-    phone= db.Column(db.Integer, unique=True, nullable=False)
+    studid = db.Column(db.Integer, unique=False, nullable=False)
+    email= db.Column(db.String(100), unique=False, nullable=False)
+    phone= db.Column(db.Integer, unique=False, nullable=False)
     name= db.Column(db.String(500), nullable=False)
     interests=db.Column(db.String(500), nullable=False)
     skills=db.Column(db.String(500), nullable=False)
@@ -285,7 +285,7 @@ class BankAccount(db.Model):
     email = db.Column(db.String(100), nullable=False)
     balance = db.Column(db.Float, default=5000.0)
 
-    student_id = db.Column(db.Integer, db.ForeignKey('student_registration.id'), unique=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('student_registration.id', name='fk_BankAccount_student'), unique=True)
     student = db.relationship('StudentRegistration', backref=db.backref('bank_account', uselist=False))
 
 
@@ -293,7 +293,7 @@ class BankAccount(db.Model):
 #---------Nur classess------------------
 class IssueLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    student_id = db.Column(db.Integer, db.ForeignKey('student_registration.id'), nullable=False)
+    student_id = db.Column(db.Integer, db.ForeignKey('student_registration.id', name='fk_issue_log_student'), nullable=False)
     issue_title = db.Column(db.String(200), nullable=False)
     issue_category = db.Column(db.String(50), nullable=False)
     issue_description = db.Column(db.Text, nullable=False)
@@ -304,13 +304,10 @@ class IssueLog(db.Model):
     submitted_at = db.Column(db.DateTime, nullable=False, default=datetime.now)
     resolved_at = db.Column(db.DateTime, nullable=True)
     staff_notes = db.Column(db.Text, nullable=True)
-    resolved_by = db.Column(db.Integer, db.ForeignKey('student_registration.id'), nullable=True)  # New field
+    resolved_by = db.Column(db.Integer, db.ForeignKey('student_registration.id', name='fk_issue_log_resolved_by'), nullable=True)  # New field
     
     student = db.relationship('StudentRegistration', backref=db.backref('issues', lazy=True), foreign_keys=[student_id])
     staff = db.relationship('StudentRegistration', backref=db.backref('resolved_issues', lazy=True), foreign_keys=[resolved_by])
-
-    student_id = db.Column(db.Integer, db.ForeignKey('student_registration.id', name='fk_issue_log_student'), nullable=False)
-    resolved_by = db.Column(db.Integer, db.ForeignKey('student_registration.id', name='fk_issue_log_resolved_by'), nullable=True)
 
     student = db.relationship(
         'StudentRegistration',
