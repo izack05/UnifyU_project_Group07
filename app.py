@@ -990,8 +990,15 @@ def studypod_booking():
     db.session.add(booking)
     db.session.commit()
 
-    flash("Study Pod booked successfully!", "success")
-    return redirect(url_for('library_home'))
+    # Redirect to invoice page
+    return redirect(url_for('studypod_invoice', booking_id=booking.id))
+
+@app.route('/studypod_invoice/<int:booking_id>')
+@login_required
+def studypod_invoice(booking_id):
+    booking = StudyPodBooking.query.get_or_404(booking_id)
+    return render_template("library/studypod_invoice.html", booking=booking)
+
 
 
 from collections import defaultdict
