@@ -23,6 +23,7 @@ from forms import LoginForm, UserForm, IssueLogForm
 
 import os
 import google.generativeai as genai
+import json
 
 # A flask instance
 app = Flask(__name__)
@@ -124,6 +125,7 @@ class StudentRegistration(db.Model, UserMixin):
         foreign_keys="IssueLog.resolved_by",
         back_populates="staff"
     )
+    placed_orders = db.relationship('Order', back_populates='student', lazy=True)
     
 
 
@@ -319,6 +321,32 @@ class IssueLog(db.Model):
         foreign_keys=[resolved_by],
         back_populates="resolved_issues"
     )
+
+
+
+
+class Order(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    student_id = db.Column(
+        db.Integer, 
+        db.ForeignKey('student_registration.id', name='fk_order_student'), 
+        nullable=False
+    )
+
+    invoice_data = db.Column(db.Text, nullable=False)  
+    total = db.Column(db.Float, nullable=False)      
+
+    status = db.Column(db.String(20), nullable=False, default='Pending') 
+    placed_at = db.Column(db.DateTime, nullable=False, default=datetime.now)
+    completed_at = db.Column(db.DateTime, nullable=True)
+    student = db.relationship(
+        'StudentRegistration',
+        back_populates='placed_orders',
+        lazy=True
+    )
+
+
 
 
 
@@ -1123,7 +1151,7 @@ def invoice():
 def confirm_order():
     cart = session.get('cart', [])
     if not cart:
-        flash("❌ Your cart is empty.", "danger")
+        flash(":x: Your cart is empty.", "danger")
         return redirect(url_for('cart'))
     
     student = StudentRegistration.query.get(current_user.id)
@@ -1133,7 +1161,7 @@ def confirm_order():
     total = sum(item['price'] * item['quantity'] for item in cart)
 
     if student.balance < total:
-        flash("❌ Insufficient balance. Please top up first.", "warning")
+        flash(":x: Insufficient balance. Please top up first.", "warning")
         return redirect(url_for('cart'))
 
     # Deduct stock
@@ -1143,11 +1171,18 @@ def confirm_order():
             food_item.stock -= item['quantity']
             db.session.add(food_item)
         else:
-            flash(f"⚠️ Not enough stock for {item['name']}.", "warning")
+            flash(f":warning: Not enough stock for {item['name']}.", "warning")
             return redirect(url_for('cart'))
         
     student.balance -= total
     db.session.add(student)
+
+    order = Order(
+        student_id=student.id,
+        invoice_data=json.dumps(cart),  
+        total=total
+    )
+    db.session.add(order)
 
     db.session.commit()
 
@@ -1164,8 +1199,10 @@ def confirm_order():
     # Clear cart
     session['cart'] = []
 
-    flash("✅ Order confirmed successfully!", "success")
+    flash(":white_check_mark: Order confirmed successfully!", "success")
     return redirect(url_for('invoice'))
+
+
 
 @app.route('/balance/add', methods=['GET', 'POST'])
 @login_required
