@@ -168,9 +168,9 @@ def seed_clubdata():
 
 class clubapp(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    studid = db.Column(db.Integer, unique=False, nullable=False)
-    email= db.Column(db.String(100), unique=False, nullable=False)
-    phone= db.Column(db.Integer, unique=False, nullable=False)
+    studid = db.Column(db.Integer, nullable=False)
+    email= db.Column(db.String(100), nullable=False)
+    phone= db.Column(db.Integer, nullable=False)
     name= db.Column(db.String(500), nullable=False)
     interests=db.Column(db.String(500), nullable=False)
     skills=db.Column(db.String(500), nullable=False)
