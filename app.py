@@ -144,6 +144,16 @@ class StudentAdmin(ModelView):
         if model.password and not model.password.startswith('pbkdf2:'):
             model.password = generate_password_hash(model.password)
 
+class AddAdmin(ModelView):
+    column_list = ('id',  'is_admin', 'full_name', 'username', 'email')
+    form_columns = ('id',  'is_admin', 'full_name', 'username', 'email', 'password')
+    form_excluded_columns = ()
+    can_delete = False
+    def on_model_change(self, form, model, is_created):
+        # password hashing
+        if model.password and not model.password.startswith('pbkdf2:'):
+            model.password = generate_password_hash(model.password)
+
 
 
 
@@ -398,7 +408,7 @@ class MyAdminIndexView(AdminIndexView):
         staff_count = db.session.query(func.count(StudentRegistration.id)).filter_by(is_staff=True).scalar()
         student_count = total - (admin_count + staff_count)
         verified_student_count = db.session.query(func.count(StudentRegistration.id)).filter_by(is_verified=True).scalar()
-        unverified_student_count = db.session.query(func.count(StudentRegistration.id)).filter_by(is_staff=False).scalar()
+        unverified_student_count = db.session.query(func.count(StudentRegistration.id)).filter_by(is_verified=False).scalar()
 
         #club info counts
         clubs = Club.query.order_by(Club.name).all()
@@ -483,9 +493,10 @@ class MyButtonsView(BaseView):
 
 admin = Admin(name="Admin Panel", template_mode='bootstrap4', index_view = MyAdminIndexView())
 admin.init_app(app)
-admin.add_view(StudentAdmin(StudentRegistration, db.session, name="Users")) 
+admin.add_view(StudentAdmin(StudentRegistration, db.session, name="Users", endpoint="users_list")) 
 admin.add_view(FoodItemAdmin(FoodItem, db.session, name="Food Items"))
 admin.add_view(MyButtonsView(name="Club Actions", endpoint="actions"))
+admin.add_view(AddAdmin(StudentRegistration, db.session, name="Add/Remove Admin", endpoint="add_admin"))
 
 
 
