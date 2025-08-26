@@ -346,6 +346,7 @@ class MyAdminIndexView(AdminIndexView):
         return redirect(url_for("homepage"))
     @expose("/")
     def index(self):
+        admins = StudentRegistration.query.filter_by(is_admin=True).all()
 
         # user type count
         total =  db.session.query(func.count(StudentRegistration.id)).scalar()
@@ -384,8 +385,19 @@ class MyAdminIndexView(AdminIndexView):
         on_process_count = db.session.query(func.count(IssueLog.id)).filter_by(status="On Process").scalar()
         solved_count = db.session.query(func.count(IssueLog.id)).filter_by(status="Solved").scalar()
 
+        # cafe food stock count
+        fooditems = FoodItem.query.order_by(FoodItem.name).all()
+        fooditem_names = []
+        fooditem_stock = []
+        for item in fooditems:
+            fooditem_names.append(item.name)
+            fooditem_stock.append(item.stock)
+        max_stock_number = max(fooditem_stock)
+        
+
         return self.render(
             "admin/index.html",
+            admins = admins,
             total = total, 
             admin_count = admin_count,
             staff_count = staff_count,
@@ -402,7 +414,11 @@ class MyAdminIndexView(AdminIndexView):
 
             reported=reported_count,
             on_process=on_process_count,
-            solved=solved_count
+            solved=solved_count,
+
+            fooditem_names = fooditem_names,
+            fooditem_stock = fooditem_stock,
+            max_stock_number = max_stock_number + 50
         )
     
 
