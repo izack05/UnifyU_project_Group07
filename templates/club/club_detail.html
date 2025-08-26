@@ -178,11 +178,7 @@
   <div class="content-wrapper">
     <!-- Club Info Card -->
     <div class="card club-info">
-      <img 
-        src="{{ url_for('static', filename='logos/' + club.logo) if club.logo else url_for('static', filename='logos/default.png') }}" 
-        alt="Club Logo" 
-        class="club-logo" 
-      />
+      <img src="{{ url_for('static', filename=(club.logo if club.logo.startswith('logos/') else 'logos/' + club.logo) if club.logo else 'logos/default.png') }}" alt="{{ club.name }} logo" class="club-logo">
       <div class="club-details">
         <h1 class="club-name">{{ club.name }}</h1>
         <div class="club-meta">👥 {{ club.members }} members | ⭐ {{ '%.1f' % club.rating }} rating</div>
