@@ -18,9 +18,12 @@
                 <div class="col-md-6">
                     <p><strong>Submitted By:</strong> {{ issue.student.full_name }}</p>
                     <p><strong>Submitted At:</strong> {{ issue.submitted_at.strftime('%Y-%m-%d %H:%M') }}</p>
-                    {% if issue.resolved_by %}
-                    <p><strong>Resolved By:</strong> {{ issue.staff.full_name }}</p>
-                    <p><strong>Resolved At:</strong> {{ issue.resolved_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                    {% if issue.status == 'Solved' and issue.resolved_by %}
+                        <p><strong>Resolved By:</strong> {{ issue.staff.full_name }}</p>
+                        <p><strong>Resolved At:</strong> {{ issue.resolved_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                    {% elif issue.status == 'On Process' and issue.resolved_by %}
+                        <p><strong>Assigned to:</strong> {{ issue.staff.full_name }}</p>
+                        <p><strong>Assigned at:</strong> {{ issue.resolved_at.strftime('%Y-%m-%d %H:%M') }}</p>
                     {% endif %}
                 </div>
             </div>
@@ -30,13 +33,18 @@
                 <p>{{ issue.issue_description }}</p>
             </div>
 
+
+            {% if issue.status != 'Solved' %}
             <form id="updateForm" class="mb-4">
                 <div class="form-group">
                     <label for="status">Update Status</label>
                     <select class="form-control" id="status" name="status">
-                        <option value="Reported" {% if issue.status == 'Reported' %}selected{% endif %}>Reported</option>
-                        <option value="On Process" {% if issue.status == 'On Process' %}selected{% endif %}>On Process</option>
-                        <option value="Solved" {% if issue.status == 'Solved' %}selected{% endif %}>Solved</option>
+                        {% if issue.status == 'Reported' %}
+                            <option value="On Process">On Process</option>
+                            <option value="Solved">Solved</option>
+                        {% elif issue.status == 'On Process' %}
+                            <option value="Solved">Solved</option>
+                        {% endif %}
                     </select>
                 </div>
                 <div class="form-group">
@@ -45,6 +53,11 @@
                 </div>
                 <button type="submit" class="btn btn-primary mt-3">Update Issue</button>
             </form>
+            {% else %}
+            <div class="mb-4">
+                <p><strong>Staff Notes:</strong> {% if issue.staff_notes %}{{ issue.staff_notes }}{% else %}<span class="text-muted">There is no staff note for this issue.</span>{% endif %}</p>
+            </div>
+            {% endif %}
 
             <a href="{{ url_for('staff_issues') }}" class="btn btn-secondary">Back to Issues</a>
         </div>
@@ -52,24 +65,25 @@
 </div>
 
 <script>
-document.getElementById('updateForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData();
-    formData.append('issue_id', '{{ issue.id }}');
-    formData.append('status', document.getElementById('status').value);
-    formData.append('staff_notes', document.getElementById('staff_notes').value);
-
-    fetch('{{ url_for("update_issue_status") }}', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            window.location.reload();
-        }
+const updateForm = document.getElementById('updateForm');
+if (updateForm) {
+    updateForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData();
+        formData.append('issue_id', '{{ issue.id }}');
+        formData.append('status', document.getElementById('status').value);
+        formData.append('staff_notes', document.getElementById('staff_notes').value);
+        fetch('{{ url_for("update_issue_status") }}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = "{{ url_for('staff_issues') }}";
+            }
+        });
     });
-});
+}
 </script>
 {% endblock %}

@@ -31,9 +31,12 @@
                     <p><strong>Floor:</strong> {{ issue.floor }}</p>
                     <p><strong>Location:</strong> {{ issue.location }}</p>
                     <p><strong>Submitted:</strong> {{ issue.submitted_at.strftime('%Y-%m-%d %H:%M') }}</p>
-                    {% if issue.resolved_by %}
-                    <p><strong>Resolved By:</strong> {{ issue.staff.full_name }}</p>
-                    <p><strong>Resolved At:</strong> {{ issue.resolved_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                    {% if issue.status == 'Solved' and issue.resolved_by %}
+                        <p><strong>Resolved By:</strong> {{ issue.staff.full_name }}</p>
+                        <p><strong>Resolved At:</strong> {{ issue.resolved_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                    {% elif issue.status == 'On Process' and issue.resolved_by %}
+                        <p><strong>Assigned to:</strong> {{ issue.staff.full_name }}</p>
+                        <p><strong>Assigned at:</strong> {{ issue.resolved_at.strftime('%Y-%m-%d %H:%M') }}</p>
                     {% endif %}
                 </div>
             </div>

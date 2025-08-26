@@ -309,21 +309,25 @@ class Transaction(db.Model):
 #---------Nur classess------------------
 class IssueLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    student_id = db.Column(db.Integer, db.ForeignKey('student_registration.id', name='fk_issue_log_student'), nullable=False)
+    student_id = db.Column(db.Integer, db.ForeignKey('student_registration.id'), nullable=False)
     issue_title = db.Column(db.String(200), nullable=False)
     issue_category = db.Column(db.String(50), nullable=False)
     issue_description = db.Column(db.Text, nullable=False)
-    floor = db.Column(db.String(3), nullable=False, default='1')  # New field for floor
+    floor = db.Column(db.String(3), nullable=False, default='1')
     location = db.Column(db.String(100), nullable=False)
     priority = db.Column(db.String(20), nullable=False, default='Medium')
-    status = db.Column(db.String(20), nullable=False, default='Reported')  # Changed default from 'Open'
+    status = db.Column(db.String(20), nullable=False, default='Reported')
     submitted_at = db.Column(db.DateTime, nullable=False, default=datetime.now)
     resolved_at = db.Column(db.DateTime, nullable=True)
     staff_notes = db.Column(db.Text, nullable=True)
-    resolved_by = db.Column(db.Integer, db.ForeignKey('student_registration.id', name='fk_issue_log_resolved_by'), nullable=True)  # New field
-    
+    resolved_by = db.Column(db.Integer, db.ForeignKey('student_registration.id'), nullable=True)
+    is_new = db.Column(db.Boolean, nullable=False, default=True)  # New: track if issue is new for staff
+
     student = db.relationship('StudentRegistration', backref=db.backref('issues', lazy=True), foreign_keys=[student_id])
     staff = db.relationship('StudentRegistration', backref=db.backref('resolved_issues', lazy=True), foreign_keys=[resolved_by])
+
+    student_id = db.Column(db.Integer, db.ForeignKey('student_registration.id', name='fk_issue_log_student'), nullable=False)
+    resolved_by = db.Column(db.Integer, db.ForeignKey('student_registration.id', name='fk_issue_log_resolved_by'), nullable=True)
 
     student = db.relationship(
         'StudentRegistration',
@@ -335,7 +339,6 @@ class IssueLog(db.Model):
         foreign_keys=[resolved_by],
         back_populates="resolved_issues"
     )
-
 
 
 
@@ -1364,14 +1367,13 @@ def log_issue():
             floor=form.floor.data,
             location=form.location.data,
             priority=form.priority.data,
-            status='Reported'
+            status='Reported',
+            is_new=True  # Mark as new for staff
         )
         db.session.add(new_issue)
         db.session.commit()
-        
         flash('Issue logged successfully! Our technical team will review it shortly.', 'success')
         return redirect(url_for('view_issues'))
-    
     return render_template('issues/log_issue.html', form=form)
 
 # Route to view individual issue details
@@ -1393,43 +1395,60 @@ def staff_issues():
     if not current_user.is_staff:
         flash('Access denied. Staff only area.', 'error')
         return redirect(url_for('homepage'))
-    
+
     floor = request.args.get('floor', 'ALL')
-    
+
     if floor != 'ALL':
         issues = IssueLog.query.filter_by(floor=floor).all()
     else:
         issues = IssueLog.query.all()
-    
+
     reported = [i for i in issues if i.status == 'Reported']
     on_process = [i for i in issues if i.status == 'On Process']
     solved = [i for i in issues if i.status == 'Solved']
-    
-    return render_template('issues/staff_issues.html', 
+
+    # Count new issues for notification
+    new_issues_count = IssueLog.query.filter_by(is_new=True, status='Reported').count()
+
+    return render_template('issues/staff_issues.html',
                          reported=reported,
                          on_process=on_process,
                          solved=solved,
-                         selected_floor=floor)
+                         selected_floor=floor,
+                         new_issues_count=new_issues_count)
 
 @app.route('/staff/update_issue_status', methods=['POST'])
 @login_required
 def update_issue_status():
     if not current_user.is_staff:
         return jsonify({'error': 'Access denied'}), 403
-    
+
     issue_id = request.form.get('issue_id')
     new_status = request.form.get('status')
     staff_notes = request.form.get('staff_notes', '')
-    
+
     issue = IssueLog.query.get_or_404(issue_id)
+    # Only allow forward status transitions
+    allowed_transitions = {
+        'Reported': ['On Process', 'Solved'],
+        'On Process': ['Solved'],
+        'Solved': []
+    }
+    if new_status not in allowed_transitions.get(issue.status, []):
+        return jsonify({'error': 'Invalid status transition'}), 400
+
     issue.status = new_status
     issue.staff_notes = staff_notes
     if new_status == 'Solved':
         issue.resolved_at = datetime.now()
         issue.resolved_by = current_user.id
-    
+    if new_status == 'On Process':
+        issue.resolved_at = datetime.now()
+        issue.resolved_by = current_user.id# Mark as not new if status is updated
+    issue.is_new = False
+
     db.session.commit()
-    
+
     return jsonify({'success': True})
 
 @app.route('/staff/issue/<int:issue_id>')
@@ -1438,8 +1457,12 @@ def staff_issue_detail(issue_id):
     if not current_user.is_staff:
         flash('Access denied. Staff only area.', 'error')
         return redirect(url_for('homepage'))
-        
+
     issue = IssueLog.query.get_or_404(issue_id)
+    # Mark as not new if staff views details
+    if issue.is_new:
+        issue.is_new = False
+        db.session.commit()
     return render_template('issues/staff_issue_detail.html', issue=issue)
 #------------------------------end-----------------------------------------
 if __name__ == '__main__':

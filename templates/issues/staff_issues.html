@@ -20,12 +20,17 @@
                 </div>
                 <div class="card-body issue-column" id="reported">
                     {% for issue in reported %}
-                        <div class="issue-card" draggable="true" data-issue-id="{{ issue.id }}">
-                            <h5>{{ issue.issue_title }}</h5>
-                            <p class="mb-1"><strong>Floor:</strong> {{ issue.floor }}</p>
-                            <p class="mb-1"><strong>Location:</strong> {{ issue.location }}</p>
-                            <a href="{{ url_for('staff_issue_detail', issue_id=issue.id) }}" class="btn btn-sm btn-info mt-2">View Details</a>
-                        </div>
+                            <div class="issue-card" draggable="true" data-issue-id="{{ issue.id }}" style="position: relative;">
+                                    <h5 style="margin-bottom: 0.5rem;">
+                                        {{ issue.issue_title }}
+                                        {% if issue.is_new %}
+                                            <span class="new-badge">New</span>
+                                        {% endif %}
+                                    </h5>
+                                    <p class="mb-1"><strong>Floor:</strong> {{ issue.floor }}</p>
+                                    <p class="mb-1"><strong>Location:</strong> {{ issue.location }}</p>
+                                    <a href="{{ url_for('staff_issue_detail', issue_id=issue.id) }}" class="btn btn-sm login-btn mt-2">View Details</a>
+                            </div>
                     {% endfor %}
                 </div>
             </div>
@@ -42,7 +47,11 @@
                             <h5>{{ issue.issue_title }}</h5>
                             <p class="mb-1"><strong>Floor:</strong> {{ issue.floor }}</p>
                             <p class="mb-1"><strong>Location:</strong> {{ issue.location }}</p>
-                            <a href="{{ url_for('staff_issue_detail', issue_id=issue.id) }}" class="btn btn-sm btn-info mt-2">View Details</a>
+                            {% if issue.resolved_by %}
+                                <p class="mb-1"><strong>Assigned to:</strong> {{ issue.staff.full_name }}</p>
+                                <p class="mb-1"><strong>Assigned at:</strong> {{ issue.resolved_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                            {% endif %}
+                            <a href="{{ url_for('staff_issue_detail', issue_id=issue.id) }}" class="btn btn-sm login-btn mt-2">View Details</a>
                         </div>
                     {% endfor %}
                 </div>
@@ -60,7 +69,7 @@
                             <h5>{{ issue.issue_title }}</h5>
                             <p class="mb-1"><strong>Floor:</strong> {{ issue.floor }}</p>
                             <p class="mb-1"><strong>Location:</strong> {{ issue.location }}</p>
-                            <a href="{{ url_for('staff_issue_detail', issue_id=issue.id) }}" class="btn btn-sm btn-info mt-2">View Details</a>
+                            <a href="{{ url_for('staff_issue_detail', issue_id=issue.id) }}" class="btn btn-sm login-btn mt-2">View Details</a>
                         </div>
                     {% endfor %}
                 </div>
@@ -90,6 +99,33 @@
 
 .issue-column.drag-over {
     background-color: #f8f9fa;
+}
+/* New badge style */
+.new-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: #e74c3c;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: bold;
+    padding: 2px 7px;
+    border-radius: 8px;
+    z-index: 2;
+    letter-spacing: 1px;
+}
+/* Login page button color for View Details and Update Issue */
+.login-btn {
+    background: #2a6ebb !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 4px !important;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+.login-btn:hover {
+    background: #1d4f8b !important;
+    color: #fff !important;
 }
 </style>
 
