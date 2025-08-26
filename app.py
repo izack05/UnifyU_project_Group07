@@ -12,6 +12,7 @@ from flask_migrate import Migrate
 
 from sk import flask_sk, ai_key, DEL_EMAIL, MAIL_PASSWORD
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 #from flask_seasurf import SeaSurf
 
 from datetime import datetime, timezone
@@ -24,6 +25,7 @@ from forms import LoginForm, UserForm, IssueLogForm
 import os
 import google.generativeai as genai
 import json
+
 
 # A flask instance
 app = Flask(__name__)
@@ -79,7 +81,10 @@ mail=Mail(app)
 
 
 
-
+#--------Club image--------#
+UPLOAD_FOLDER = os.path.join("static", "logos")
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 
 
@@ -824,11 +829,18 @@ def manage_club(club_id=None):
 
     if request.method == 'POST':
         club.name = request.form['name']
-        club.logo = request.form.get('logo')
         club.bio = request.form.get('bio')
         club.rating = float(request.form.get('rating') or 0)
         club.members = int(request.form.get('members') or 0)
         club.email = request.form.get('email')
+
+        # Handle file upload
+        logo_file = request.files.get('logo')
+        if logo_file and logo_file.filename:
+            filename = secure_filename(logo_file.filename)
+            save_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+            logo_file.save(save_path)
+            club.logo = f"logos/{filename}"   # save relative path
 
         db.session.add(club)
         db.session.commit()

@@ -49,7 +49,7 @@
   {% if clubs %}
     {% for club in clubs %}
       <a href="{{ url_for('club_detail', club_id=club.id) }}" class="club-card">
-        <img src="{{ url_for('static', filename='logos/' + (club.logo or 'default.png')) }}" alt="{{ club.name }} logo" class="club-logo">
+        <img src="{{ url_for('static', filename=(club.logo if club.logo.startswith('logos/') else 'logos/' + club.logo) if club.logo else 'logos/default.png') }}" alt="{{ club.name }} logo" class="club-logo">
         <div class="club-info">
           <h3>{{ club.name }}</h3>
           <p>{{ club.bio or 'No description available.' }}</p>

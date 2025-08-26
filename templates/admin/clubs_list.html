@@ -19,7 +19,7 @@
         <tr>
             <td>{{ club.name }}</td>
             <td>
-                <img src="{{ url_for('static', filename='logos/' ~ club.logo) }}" alt="Logo" height="40">
+                <img src="{{ url_for('static', filename=( 'logos/' ~ club.logo if not club.logo.startswith('logos/') else club.logo )) }}" alt="Logo" height="40">
             </td>
             <td>{{ club.rating }}</td>
             <td>{{ club.members }}</td>
