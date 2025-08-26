@@ -132,6 +132,7 @@ class StudentRegistration(db.Model, UserMixin):
     )
     placed_orders = db.relationship('Order', back_populates='student', lazy=True)
     
+    transactions = db.relationship('Transaction', back_populates='student', lazy='dynamic')
 
 
 class StudentAdmin(ModelView):
@@ -295,7 +296,15 @@ class BankAccount(db.Model):
     student_id = db.Column(db.Integer, db.ForeignKey('student_registration.id', name='fk_BankAccount_student'), unique=True)
     student = db.relationship('StudentRegistration', backref=db.backref('bank_account', uselist=False))
 
+class Transaction(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('student_registration.id'), nullable=False)
+    type = db.Column(db.String(20), nullable=False)  # 'credit' or 'debit'
+    amount = db.Column(db.Float, nullable=False)
+    description = db.Column(db.String(255))  # e.g., "Canteen: Sandwich x 2"
+    date = db.Column(db.DateTime, default=datetime.utcnow)
 
+    student = db.relationship('StudentRegistration', back_populates='transactions')
 
 #---------Nur classess------------------
 class IssueLog(db.Model):
@@ -1170,7 +1179,7 @@ def invoice():
 def confirm_order():
     cart = session.get('cart', [])
     if not cart:
-        flash(":x: Your cart is empty.", "danger")
+        flash("⚠️ Your cart is empty.", "danger")
         return redirect(url_for('cart'))
     
     student = StudentRegistration.query.get(current_user.id)
@@ -1180,7 +1189,7 @@ def confirm_order():
     total = sum(item['price'] * item['quantity'] for item in cart)
 
     if student.balance < total:
-        flash(":x: Insufficient balance. Please top up first.", "warning")
+        flash("⚠️ Insufficient balance. Please top up first.", "warning")
         return redirect(url_for('cart'))
 
     # Deduct stock
@@ -1190,12 +1199,24 @@ def confirm_order():
             food_item.stock -= item['quantity']
             db.session.add(food_item)
         else:
-            flash(f":warning: Not enough stock for {item['name']}.", "warning")
+            flash(f"⚠️ Not enough stock for {item['name']}.", "warning")
             return redirect(url_for('cart'))
         
+    # Deduct student balance
     student.balance -= total
     db.session.add(student)
 
+    # Log **canteen purchase as transaction**
+    for item in cart:
+        txn = Transaction(
+            student_id=student.id,
+            type='debit',  # money spent
+            amount=item['price'] * item['quantity'],
+            description=f"Canteen: {item['name']} x {item['quantity']}"
+        )
+        db.session.add(txn)
+
+    # Save order for invoice
     order = Order(
         student_id=student.id,
         invoice_data=json.dumps(cart),  
@@ -1204,10 +1225,6 @@ def confirm_order():
     db.session.add(order)
 
     db.session.commit()
-
-    updated_items = FoodItem.query.all()
-    for item in updated_items:
-        print(f"{item.name}: {item.stock} left in stock")  # prints to server console
 
     # Save last order in session for invoice
     session['last_order'] = {
@@ -1218,9 +1235,8 @@ def confirm_order():
     # Clear cart
     session['cart'] = []
 
-    flash(":white_check_mark: Order confirmed successfully!", "success")
+    flash("✅ Order confirmed successfully!", "success")
     return redirect(url_for('invoice'))
-
 
 
 @app.route('/balance/add', methods=['GET', 'POST'])
@@ -1239,23 +1255,29 @@ def add_credit():
         )
         db.session.add(bank)
         db.session.commit()
-        
 
     if request.method == 'POST':
         try:
             amount = float(request.form.get('amount', 0))
-            if amount <= 0:
-                flash("Enter a valid positive amount.", "warning")
-            elif amount > bank.balance:
-                flash("Bank doesn't have enough balance.", "warning")
-            else:
-                student.balance += amount
-                bank.balance -= amount
-                db.session.commit()
-                flash(f"{amount} ৳ added successfully!", "success")
-                # Stay on the same page instead of redirecting
         except ValueError:
             flash("Invalid input.", "warning")
+            return render_template('balance/add_credit.html', student=student, bank=bank)
+
+        if amount <= 0:
+            flash("Enter a valid positive amount.", "warning")
+        elif amount > bank.balance:
+            flash("Bank doesn't have enough balance.", "warning")
+        else:
+            # Update balances
+            student.balance += amount
+            bank.balance -= amount
+
+            # Log transaction
+            txn = Transaction(student_id=student.id, type='credit', amount=amount)
+            db.session.add(txn)
+            db.session.commit()
+
+            flash(f"{amount} ৳ added successfully!", "success")
 
     return render_template('balance/add_credit.html', student=student, bank=bank)
 
@@ -1273,22 +1295,34 @@ def withdraw_credit():
     if request.method == 'POST':
         try:
             amount = float(request.form.get('amount', 0))
-            if amount <= 0:
-                flash("Enter a valid positive amount.", "warning")
-            elif amount > student.balance:
-                flash("You don't have enough balance to withdraw.", "warning")
-            else:
-                student.balance -= amount
-                bank.balance += amount
-                db.session.commit()
-                flash(f"{amount} ৳ has been withdrawn successfully!", "success")
-                # Stay on the same page to show flash message
         except ValueError:
             flash("Invalid input.", "warning")
+            return render_template('balance/withdraw_credit.html', student=student, bank=bank)
 
-    return render_template('balance/withdraw_credit.html', student=student)
+        if amount <= 0:
+            flash("Enter a valid positive amount.", "warning")
+        elif amount > student.balance:
+            flash("You don't have enough balance to withdraw.", "warning")
+        else:
+            # Update balances
+            student.balance -= amount
+            bank.balance += amount
 
+            # Log transaction
+            txn = Transaction(student_id=student.id, type='withdraw', amount=amount)
+            db.session.add(txn)
+            db.session.commit()
 
+            flash(f"{amount} ৳ has been withdrawn successfully!", "success")
+
+    return render_template('balance/withdraw_credit.html', student=student, bank=bank)
+
+@app.route('/balance/history')
+@login_required
+def transaction_history():
+    student = StudentRegistration.query.get(current_user.id)
+    transactions = student.transactions.order_by(Transaction.date.desc()).all()
+    return render_template('balance/history.html', transactions=transactions)
 
 #---------------Nur Routes---------------------
 
