@@ -12,6 +12,7 @@ from flask_migrate import Migrate
 
 from sk import flask_sk, ai_key, DEL_EMAIL, MAIL_PASSWORD
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 #from flask_seasurf import SeaSurf
 
 from datetime import datetime, timezone
@@ -23,6 +24,8 @@ from forms import LoginForm, UserForm, IssueLogForm
 
 import os
 import google.generativeai as genai
+import json
+
 
 # A flask instance
 app = Flask(__name__)
@@ -78,7 +81,10 @@ mail=Mail(app)
 
 
 
-
+#--------Club image--------#
+UPLOAD_FOLDER = os.path.join("static", "logos")
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 
 
@@ -124,7 +130,9 @@ class StudentRegistration(db.Model, UserMixin):
         foreign_keys="IssueLog.resolved_by",
         back_populates="staff"
     )
+    placed_orders = db.relationship('Order', back_populates='student', lazy=True)
     
+    transactions = db.relationship('Transaction', back_populates='student', lazy='dynamic')
 
 
 class StudentAdmin(ModelView):
@@ -288,7 +296,15 @@ class BankAccount(db.Model):
     student_id = db.Column(db.Integer, db.ForeignKey('student_registration.id', name='fk_BankAccount_student'), unique=True)
     student = db.relationship('StudentRegistration', backref=db.backref('bank_account', uselist=False))
 
+class Transaction(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('student_registration.id'), nullable=False)
+    type = db.Column(db.String(20), nullable=False)  # 'credit' or 'debit'
+    amount = db.Column(db.Float, nullable=False)
+    description = db.Column(db.String(255))  # e.g., "Canteen: Sandwich x 2"
+    date = db.Column(db.DateTime, default=datetime.utcnow)
 
+    student = db.relationship('StudentRegistration', back_populates='transactions')
 
 #---------Nur classess------------------
 class IssueLog(db.Model):
@@ -319,6 +335,32 @@ class IssueLog(db.Model):
         foreign_keys=[resolved_by],
         back_populates="resolved_issues"
     )
+
+
+
+
+class Order(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    student_id = db.Column(
+        db.Integer, 
+        db.ForeignKey('student_registration.id', name='fk_order_student'), 
+        nullable=False
+    )
+
+    invoice_data = db.Column(db.Text, nullable=False)  
+    total = db.Column(db.Float, nullable=False)      
+
+    status = db.Column(db.String(20), nullable=False, default='Pending') 
+    placed_at = db.Column(db.DateTime, nullable=False, default=datetime.now)
+    completed_at = db.Column(db.DateTime, nullable=True)
+    student = db.relationship(
+        'StudentRegistration',
+        back_populates='placed_orders',
+        lazy=True
+    )
+
+
 
 
 
@@ -812,11 +854,18 @@ def manage_club(club_id=None):
 
     if request.method == 'POST':
         club.name = request.form['name']
-        club.logo = request.form.get('logo')
         club.bio = request.form.get('bio')
         club.rating = float(request.form.get('rating') or 0)
         club.members = int(request.form.get('members') or 0)
         club.email = request.form.get('email')
+
+        # Handle file upload
+        logo_file = request.files.get('logo')
+        if logo_file and logo_file.filename:
+            filename = secure_filename(logo_file.filename)
+            save_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+            logo_file.save(save_path)
+            club.logo = f"logos/{filename}"   # save relative path
 
         db.session.add(club)
         db.session.commit()
@@ -978,8 +1027,15 @@ def studypod_booking():
     db.session.add(booking)
     db.session.commit()
 
-    flash("Study Pod booked successfully!", "success")
-    return redirect(url_for('library_home'))
+    # Redirect to invoice page
+    return redirect(url_for('studypod_invoice', booking_id=booking.id))
+
+@app.route('/studypod_invoice/<int:booking_id>')
+@login_required
+def studypod_invoice(booking_id):
+    booking = StudyPodBooking.query.get_or_404(booking_id)
+    return render_template("library/studypod_invoice.html", booking=booking)
+
 
 
 from collections import defaultdict
@@ -1139,7 +1195,7 @@ def invoice():
 def confirm_order():
     cart = session.get('cart', [])
     if not cart:
-        flash("❌ Your cart is empty.", "danger")
+        flash("⚠️ Your cart is empty.", "danger")
         return redirect(url_for('cart'))
     
     student = StudentRegistration.query.get(current_user.id)
@@ -1149,7 +1205,7 @@ def confirm_order():
     total = sum(item['price'] * item['quantity'] for item in cart)
 
     if student.balance < total:
-        flash("❌ Insufficient balance. Please top up first.", "warning")
+        flash("⚠️ Insufficient balance. Please top up first.", "warning")
         return redirect(url_for('cart'))
 
     # Deduct stock
@@ -1162,14 +1218,29 @@ def confirm_order():
             flash(f"⚠️ Not enough stock for {item['name']}.", "warning")
             return redirect(url_for('cart'))
         
+    # Deduct student balance
     student.balance -= total
     db.session.add(student)
 
-    db.session.commit()
+    # Log **canteen purchase as transaction**
+    for item in cart:
+        txn = Transaction(
+            student_id=student.id,
+            type='debit',  # money spent
+            amount=item['price'] * item['quantity'],
+            description=f"Canteen: {item['name']} x {item['quantity']}"
+        )
+        db.session.add(txn)
 
-    updated_items = FoodItem.query.all()
-    for item in updated_items:
-        print(f"{item.name}: {item.stock} left in stock")  # prints to server console
+    # Save order for invoice
+    order = Order(
+        student_id=student.id,
+        invoice_data=json.dumps(cart),  
+        total=total
+    )
+    db.session.add(order)
+
+    db.session.commit()
 
     # Save last order in session for invoice
     session['last_order'] = {
@@ -1182,6 +1253,7 @@ def confirm_order():
 
     flash("✅ Order confirmed successfully!", "success")
     return redirect(url_for('invoice'))
+
 
 @app.route('/balance/add', methods=['GET', 'POST'])
 @login_required
@@ -1199,23 +1271,29 @@ def add_credit():
         )
         db.session.add(bank)
         db.session.commit()
-        
 
     if request.method == 'POST':
         try:
             amount = float(request.form.get('amount', 0))
-            if amount <= 0:
-                flash("Enter a valid positive amount.", "warning")
-            elif amount > bank.balance:
-                flash("Bank doesn't have enough balance.", "warning")
-            else:
-                student.balance += amount
-                bank.balance -= amount
-                db.session.commit()
-                flash(f"{amount} ৳ added successfully!", "success")
-                # Stay on the same page instead of redirecting
         except ValueError:
             flash("Invalid input.", "warning")
+            return render_template('balance/add_credit.html', student=student, bank=bank)
+
+        if amount <= 0:
+            flash("Enter a valid positive amount.", "warning")
+        elif amount > bank.balance:
+            flash("Bank doesn't have enough balance.", "warning")
+        else:
+            # Update balances
+            student.balance += amount
+            bank.balance -= amount
+
+            # Log transaction
+            txn = Transaction(student_id=student.id, type='credit', amount=amount)
+            db.session.add(txn)
+            db.session.commit()
+
+            flash(f"{amount} ৳ added successfully!", "success")
 
     return render_template('balance/add_credit.html', student=student, bank=bank)
 
@@ -1233,22 +1311,34 @@ def withdraw_credit():
     if request.method == 'POST':
         try:
             amount = float(request.form.get('amount', 0))
-            if amount <= 0:
-                flash("Enter a valid positive amount.", "warning")
-            elif amount > student.balance:
-                flash("You don't have enough balance to withdraw.", "warning")
-            else:
-                student.balance -= amount
-                bank.balance += amount
-                db.session.commit()
-                flash(f"{amount} ৳ has been withdrawn successfully!", "success")
-                # Stay on the same page to show flash message
         except ValueError:
             flash("Invalid input.", "warning")
+            return render_template('balance/withdraw_credit.html', student=student, bank=bank)
 
-    return render_template('balance/withdraw_credit.html', student=student)
+        if amount <= 0:
+            flash("Enter a valid positive amount.", "warning")
+        elif amount > student.balance:
+            flash("You don't have enough balance to withdraw.", "warning")
+        else:
+            # Update balances
+            student.balance -= amount
+            bank.balance += amount
 
+            # Log transaction
+            txn = Transaction(student_id=student.id, type='withdraw', amount=amount)
+            db.session.add(txn)
+            db.session.commit()
 
+            flash(f"{amount} ৳ has been withdrawn successfully!", "success")
+
+    return render_template('balance/withdraw_credit.html', student=student, bank=bank)
+
+@app.route('/balance/history')
+@login_required
+def transaction_history():
+    student = StudentRegistration.query.get(current_user.id)
+    transactions = student.transactions.order_by(Transaction.date.desc()).all()
+    return render_template('balance/history.html', transactions=transactions)
 
 #---------------Nur Routes---------------------
 

@@ -161,6 +161,26 @@
 <body>
 {% extends "layout/base.html" %}
 {% block content %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div style="max-width:900px; margin:20px auto;">
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}" style="
+            padding: 10px 15px; 
+            margin-bottom: 10px; 
+            border-radius: 6px; 
+            color: {% if category == 'success' %}green{% else %}red{% endif %};
+            background-color: {% if category == 'success' %}#d4edda{% else %}#f8d7da{% endif %};
+            border: 1px solid {% if category == 'success' %}#c3e6cb{% else %}#f5c6cb{% endif %};
+        ">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+
 
 <div class="container">
     <!-- Library Timings -->

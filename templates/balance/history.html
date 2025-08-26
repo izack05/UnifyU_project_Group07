@@ -1,0 +1,31 @@
+{% extends "layout/base.html" %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Transaction History</h2>
+    <table class="table table-striped mt-3">
+        <thead>
+            <tr>
+                <th>Date & Time</th>
+                <th>Type</th>
+                <th>Amount (৳)</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for txn in transactions %}
+            <tr>
+                <td>{{ txn.date.strftime("%Y-%m-%d %H:%M:%S") }}</td>
+                <td>{{ txn.type|capitalize }}</td>
+                <td>{{ txn.amount }}</td>
+                <td>{{ txn.description or '-' }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4" class="text-center">No transactions yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{{ url_for('balance') }}" class="btn btn-secondary mt-3">Back to Balance</a>
+</div>
+{% endblock %}

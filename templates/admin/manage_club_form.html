@@ -3,31 +3,43 @@
 {% block content %}
 <h2 class="page-header">{{ 'Edit' if club.id else 'Add' }} Club</h2>
 
-<form method="POST">
+<form method="POST" enctype="multipart/form-data">
     <div class="mb-3">
         <label>Name</label>
         <input type="text" name="name" class="form-control" value="{{ club.name or '' }}" required>
     </div>
+
     <div class="mb-3">
-        <label>Logo URL</label>
-        <input type="text" name="logo" class="form-control" value="{{ club.logo or '' }}">
+        <label>Logo</label>
+        {% if club.logo %}
+            <div class="mb-2">
+                <img src="{{ url_for('static', filename=('logos/' ~ club.logo) if not club.logo.startswith('logos/') else club.logo) }}" 
+                alt="Club Logo" style="max-height: 80px;">
+            </div>
+        {% endif %}
+        <input type="file" name="logo" class="form-control">
     </div>
+
     <div class="mb-3">
         <label>Bio</label>
         <textarea name="bio" class="form-control">{{ club.bio or '' }}</textarea>
     </div>
+
     <div class="mb-3">
         <label>Rating</label>
         <input type="number" step="0.1" name="rating" class="form-control" value="{{ club.rating or 0 }}">
     </div>
+
     <div class="mb-3">
         <label>Members</label>
         <input type="number" name="members" class="form-control" value="{{ club.members or 0 }}">
     </div>
+
     <div class="mb-3">
         <label>Email</label>
         <input type="email" name="email" class="form-control" value="{{ club.email or '' }}">
     </div>
+
     <button type="submit" class="btn btn-primary">Save</button>
     <a href="{{ url_for('admin_view_club') }}" class="btn btn-secondary">Cancel</a>
 </form>
