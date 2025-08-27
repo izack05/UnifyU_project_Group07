@@ -47,10 +47,7 @@
                             <h5>{{ issue.issue_title }}</h5>
                             <p class="mb-1"><strong>Floor:</strong> {{ issue.floor }}</p>
                             <p class="mb-1"><strong>Location:</strong> {{ issue.location }}</p>
-                            {% if issue.resolved_by %}
-                                <p class="mb-1"><strong>Assigned to:</strong> {{ issue.staff.full_name }}</p>
-                                <p class="mb-1"><strong>Assigned at:</strong> {{ issue.resolved_at.strftime('%Y-%m-%d %H:%M') }}</p>
-                            {% endif %}
+                        
                             <a href="{{ url_for('staff_issue_detail', issue_id=issue.id) }}" class="btn btn-sm login-btn mt-2">View Details</a>
                         </div>
                     {% endfor %}

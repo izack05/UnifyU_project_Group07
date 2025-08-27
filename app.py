@@ -578,7 +578,8 @@ def userprofile():
 @app.route('/homepage')
 @login_required
 def homepage():
-    return render_template('homepage.html')
+    new_issues_count = IssueLog.query.filter_by(is_new=True, status='Reported').count()
+    return render_template('homepage.html', new_issues_count = new_issues_count)
 
 @app.route('/registration')
 def registration():
@@ -1464,6 +1465,8 @@ def update_issue_status():
 @app.route('/staff/issue/<int:issue_id>')
 @login_required
 def staff_issue_detail(issue_id):
+    # Count new issues for notification
+    new_issues_count = IssueLog.query.filter_by(is_new=True, status='Reported').count()
     if not current_user.is_staff:
         flash('Access denied. Staff only area.', 'error')
         return redirect(url_for('homepage'))
@@ -1473,7 +1476,7 @@ def staff_issue_detail(issue_id):
     if issue.is_new:
         issue.is_new = False
         db.session.commit()
-    return render_template('issues/staff_issue_detail.html', issue=issue)
+    return render_template('issues/staff_issue_detail.html', issue=issue, new_issues_count = new_issues_count)
 #------------------------------end-----------------------------------------
 if __name__ == '__main__':
     app.run(debug=True)   #helps us debug
