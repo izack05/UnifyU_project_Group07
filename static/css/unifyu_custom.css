@@ -1,0 +1,215 @@
+/* Distinct style for 'View Order' button on invoice page */
+.btn-view-order {
+    background: linear-gradient(90deg, #ff9800 60%, #ffb347 100%);
+    color: #fff;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(255,152,0,0.13);
+    transition: background 0.2s, color 0.2s;
+}
+.btn-view-order:hover {
+    background: linear-gradient(90deg, #ff6f00 60%, #ff9800 100%);
+    color: #fff;
+}
+.modern-badge {
+    position: absolute;
+    top: -0.7em;
+    right: -1.1em;
+    background: linear-gradient(90deg, #ff1744 60%, #ff5e62 100%);
+    color: #fff;
+    border-radius: 1em;
+    font-size: 0.68em;
+    padding: 2px 9px 2px 7px;
+    font-weight: 700;
+    z-index: 2;
+    box-shadow: 0 2px 8px rgba(255,23,68,0.13);
+    letter-spacing: 0.04em;
+    border: 1.5px solid #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.08);
+}
+.modern-badge-bg {
+    background: linear-gradient(90deg, #e0e7ff 60%, #f8fafc 100%);
+    color: #3a3a3a;
+    border-radius: 0.7em;
+    padding: 0.3em 1.1em;
+    font-weight: 600;
+    font-size: 1em;
+    box-shadow: 0 1px 4px rgba(108,99,255,0.07);
+    display: inline-block;
+}
+.modern-badge-bg-alt {
+    background: linear-gradient(90deg, #f3e8ff 60%, #e0e7ff 100%);
+    color: #6c63ff;
+    border-radius: 0.7em;
+    padding: 0.3em 1.1em;
+    font-weight: 600;
+    font-size: 1em;
+    box-shadow: 0 1px 4px rgba(108,99,255,0.07);
+    display: inline-block;
+}
+.btn-glow {
+    box-shadow: 0 2px 16px 0 rgba(108,99,255,0.13), 0 1.5px 4px 0 rgba(0,0,0,0.07);
+    background: linear-gradient(90deg, #6c63ff 60%, #5f72ff 100%);
+    color: #fff;
+    border: none;
+    font-weight: 600;
+    border-radius: 0.5em;
+    transition: box-shadow 0.2s, background 0.2s;
+}
+.btn-glow:hover {
+    box-shadow: 0 4px 24px 0 rgba(108,99,255,0.18), 0 2px 8px 0 rgba(0,0,0,0.10);
+    background: linear-gradient(90deg, #5548c8 60%, #6c63ff 100%);
+    color: #fff;
+}
+.issue-status-text {
+    font-size: 1em;
+    color: #333;
+    font-weight: 500;
+    background: none !important;
+    padding: 0;
+}
+.issue-priority-text {
+    font-size: 0.98em;
+    color: #6c63ff;
+    font-weight: 500;
+    background: none !important;
+    padding: 0;
+}
+.btn-modern {
+    background: #6c63ff;
+    color: #fff;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+.btn-modern:hover {
+    background: #5548c8;
+    color: #fff;
+}
+.order-status-text {
+    font-size: 1em;
+    color: #333;
+    font-weight: 500;
+    background: none !important;
+    padding: 0;
+}
+
+.new-indicator-badge {
+    position: absolute;
+    top: 2px;
+    right: 8px;
+    background: #ff1744;
+    color: #fff;
+    border-radius: 0.7em;
+    font-size: 0.65em;
+    padding: 1px 6px;
+    font-weight: 600;
+    z-index: 2;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    letter-spacing: 0.02em;
+}
+
+
+
+/* Modern table and button style improvements */
+.table {
+    border-radius: 0.7em;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+.table th, .table td {
+    border: none;
+    padding: 0.85em 1.1em;
+    vertical-align: middle;
+}
+.btn, .btn-sm, .btn-secondary {
+    border-radius: 0.5em;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+.btn:hover, .btn-sm:hover, .btn-secondary:hover {
+    filter: brightness(0.97);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+/* UnifyU Custom Styles for Buttons and Cards */
+/* Nur */
+.cart-wrapper { position: relative; display: inline-block; }
+
+.btn-view-cart {
+    background:#2e2e54; color:white; padding:8px 15px; border-radius:6px;
+    text-decoration:none; transition: all 0.3s ease;
+  }
+.btn-view-cart:hover { background:#454270; }
+
+.btn-primary, .btn-success, .btn-danger, .btn-warning, .btn-info, .btn-secondary {
+    border-radius: 0.5rem;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+.btn-primary:hover, .btn-success:hover, .btn-danger:hover, .btn-warning:hover, .btn-info:hover, .btn-secondary:hover {
+    filter: brightness(0.95);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+
+.card, .table {
+    border-radius: 1rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+.badge {
+    border-radius: 0.5rem;
+    font-size: 0.95em;
+    padding: 0.4em 0.7em;
+}
+
+input, select, textarea {
+    border-radius: 0.4rem !important;
+    border: 1px solid #e0e0e0 !important;
+    box-shadow: none !important;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #6c63ff !important;
+    box-shadow: 0 0 0 0.15rem rgba(108,99,255,0.15) !important;
+}
+
+.new-badge, .new-indicator {
+    background: #ff1744 !important;
+    color: #fff !important;
+    border-radius: 0.5rem;
+    font-size: 0.7em;
+    padding: 2px 7px;
+    margin-left: 0.3em;
+    vertical-align: top;
+}
+
+/* Table row hover effect */
+.table-hover tbody tr:hover {
+    background-color: #f5f7fa;
+    transition: background 0.2s;
+}
+
+/* Responsive card spacing */
+.card {
+    margin-bottom: 1.5rem;
+}
+
+/* Custom for UnifyU */
+.login-btn {
+    background: #6c63ff;
+    color: #fff;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+.login-btn:hover {
+    background: #5548c8;
+    color: #fff;
+}

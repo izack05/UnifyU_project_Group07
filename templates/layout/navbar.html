@@ -34,16 +34,46 @@
         {% endif %}
 
         <li class="nav-item d-flex align-items-center" style="position: relative;">
-          {% if current_user.is_authenticated and current_user.is_staff %}
-            <!-- Notification bell beside Home for staff -->
-            <a href="{{ url_for('staff_issues') }}" class="nav-link mx-1 p-0" style="color: #ece3e3; position: relative;">
+          {% if current_user.is_authenticated %}
+            <!-- Merged Notification Bell -->
+            <div class="nav-link mx-1 p-0 position-relative" style="color: #ece3e3; cursor:pointer;" id="notifDropdownBtn">
               <span style="font-size: 1.5rem; vertical-align: middle;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 24 24"><path d="M12 24c1.104 0 2-.896 2-2h-4c0 1.104.896 2 2 2zm6.364-6c-.781-1.104-2.364-2-2.364-6 0-3.313-2.687-6-6-6s-6 2.687-6 6c0 4-1.583 4.896-2.364 6-.195.276-.293.601-.293.936 0 .552.447 1 1 1h16c.553 0 1-.448 1-1 0-.335-.098-.66-.293-.936z"/></svg>
-                {% if new_issues_count and new_issues_count > 0 %}
-                  <span style="position: absolute; top: -6px; right: -10px; background: #e74c3c; color: white; border-radius: 50%; padding: 2px 7px; font-size: 0.8rem; font-weight: bold;">{{ new_issues_count }}</span>
+                {% if merged_count and merged_count > 0 %}
+                  <span style="position: absolute; top: -6px; right: -10px; background: #e74c3c; color: white; border-radius: 50%; padding: 2px 7px; font-size: 0.8rem; font-weight: bold;">{{ merged_count }}</span>
                 {% endif %}
               </span>
-            </a>
+              <!-- Dropdown -->
+              <div id="notifDropdown" style="display:none; position:absolute; top: 20px; right: 10px;background:#fff; color:#222; min-width:200px; box-shadow:0 2px 8px rgba(0,0,0,0.15); border-radius:8px; z-index:1000;">
+                {% if current_user.is_staff %}
+                  <button onclick="window.location.href='{{ url_for('staff_issues') }}'" class="dropdown-item d-flex justify-content-between align-items-center py-2 px-3 w-100 text-start" style="background:none; border:none; cursor:pointer; color:#222;">Issues <span class="badge bg-danger">{{ new_issues_count }}</span></button>
+                  <button onclick="window.location.href='{{ url_for('staff_canteen_orders') }}'" class="dropdown-item d-flex justify-content-between align-items-center py-2 px-3 w-100 text-start" style="background:none; border:none; cursor:pointer; color:#222;">Orders <span class="badge bg-primary">{{ new_orders_count }}</span></button>
+                {% else %}
+                  <button onclick="window.location.href='{{ url_for('view_issues') }}'" class="dropdown-item d-flex justify-content-between align-items-center py-2 px-3 w-100 text-start" style="background:none; border:none; cursor:pointer; color:#222;">Issues <span class="badge bg-danger">{{ changed_issues_count }}</span></button>
+                  <button onclick="window.location.href='{{ url_for('student_orders') }}'" class="dropdown-item d-flex justify-content-between align-items-center py-2 px-3 w-100 text-start" style="background:none; border:none; cursor:pointer; color:#222;">Orders <span class="badge bg-primary">{{ changed_orders_count }}</span></button>
+                {% endif %}
+              </div>
+            </div>
+            <script>
+              document.addEventListener('DOMContentLoaded', function() {
+                var btn = document.getElementById('notifDropdownBtn');
+                var dropdown = document.getElementById('notifDropdown');
+                if(btn && dropdown) {
+                  btn.addEventListener('mouseenter', function() {
+                    dropdown.style.display = 'block';
+                  });
+                  btn.addEventListener('mouseleave', function() {
+                    dropdown.style.display = 'none';
+                  });
+                  dropdown.addEventListener('mouseenter', function() {
+                    dropdown.style.display = 'block';
+                  });
+                  dropdown.addEventListener('mouseleave', function() {
+                    dropdown.style.display = 'none';
+                  });
+                }
+              });
+            </script>
           {% endif %}
           <a class="nav-link btn btn-outline-primary mx-1" aria-current="page" href="{{ url_for('homepage') }}" style="color: #ece3e3">Home</a>
         </li>

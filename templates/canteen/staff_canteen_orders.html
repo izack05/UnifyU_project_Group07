@@ -1,0 +1,57 @@
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unifyu_custom.css') }}">
+{% endblock %}
+{% extends "layout/base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>All Canteen Orders</h2>
+    {% if orders %}
+    <div class="table-responsive mt-3">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Student</th>
+                    <th>Placed At</th>
+                    <th>Status</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>#{{ order.id }}</td>
+                    <td>{{ order.student.full_name }}</td>
+                    <td>{{ order.placed_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>
+                        <form method="post" action="{{ url_for('update_order_status', order_id=order.id) }}" style="display:inline-block;">
+                            <select name="status" class="form-select form-select-sm d-inline w-auto" {% if order.status != 'Pending' %}disabled{% endif %}>
+                                <option value="Pending" {% if order.status == 'Pending' %}selected{% endif %}>Pending</option>
+                                <option value="Confirmed" {% if order.status == 'Confirmed' %}selected{% endif %}>Confirmed</option>
+                                <option value="Cancelled" {% if order.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                            </select>
+                            <button type="submit" class="btn btn-success btn-sm" {% if order.status != 'Pending' %}disabled{% endif %}>Update</button>
+                        </form>
+                    </td>
+                    <td>৳{{ order.total }}</td>
+                    <td style="position:relative;">
+                        <!-- Details button with 'New' badge if status is Pending -->
+                        <a href="{{ url_for('staff_order_details', order_id=order.id) }}" class="btn btn-glow btn-sm position-relative">
+                            Details
+                            {% if order.status == 'Pending' %}
+                                <span class="new-indicator-badge modern-badge" style="top: -10px; right: -10px;">New</span>
+                            {% endif %}
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info mt-3">
+        <p>No canteen orders found.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

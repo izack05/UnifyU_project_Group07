@@ -1,0 +1,56 @@
+{# Staff Order Details Page #}
+{% extends "layout/base.html" %}
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unifyu_custom.css') }}">
+{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="card p-4">
+        <h3 class="mb-3">Order #{{ order.id }} Details</h3>
+        <div class="mb-2"><strong>Status:</strong> <span class="order-status-text">{{ order.status }}</span></div>
+        <div class="mb-2"><strong>Placed At:</strong> {{ order.placed_at.strftime('%Y-%m-%d %H:%M') }}</div>
+        <div class="mb-2"><strong>Updated At:</strong> {{ order.completed_at.strftime('%Y-%m-%d %H:%M') if order.completed_at else 'N/A' }}</div>
+        <div class="mb-2"><strong>Total:</strong> ৳{{ order.total }}</div>
+        <hr>
+        <h5>Order Items</h5>
+        {% if invoice and invoice|length > 0 %}
+        <div class="table-responsive mb-3">
+            <table class="table table-bordered align-middle">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for item in invoice %}
+                    <tr>
+                        <td>{{ item.get('name', item) }}</td>
+                        <td class="text-center">{{ item.get('quantity', 1) }}</td>
+                        <td>৳{{ item.get('price', '') }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <div class="alert alert-info">No item details found for this order.</div>
+        {% endif %}
+        {# Only show status update if Pending #}
+        {% if order.status == 'Pending' %}
+        <form method="post" class="mt-3">
+            <div class="mb-2">
+                <label for="status">Update Status:</label>
+                <select name="status" id="status" class="form-select w-auto d-inline-block ms-2">
+                    <option value="Confirmed">Confirmed</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
+                <button type="submit" class="btn btn-success btn-sm ms-2">Update</button>
+            </div>
+        </form>
+        {% endif %}
+        <a href="{{ url_for('staff_canteen_orders') }}" class="btn btn-secondary mt-3">Back to Orders</a>
+    </div>
+</div>
+{% endblock %}

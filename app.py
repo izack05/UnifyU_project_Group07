@@ -332,6 +332,7 @@ class IssueLog(db.Model):
     staff_notes = db.Column(db.Text, nullable=True)
     resolved_by = db.Column(db.Integer, db.ForeignKey('student_registration.id', name='fk_issue_log_resolved_by'), nullable=True)
     is_new = db.Column(db.Boolean, nullable=False, default=True)  # New: track if issue is new for staff
+    is_changed = db.Column(db.Boolean, nullable=False, default=False)  # New: track if issue status changed for student
 
     # student = db.relationship('StudentRegistration', backref=db.backref('issues', lazy=True), foreign_keys=[student_id])
     # staff = db.relationship('StudentRegistration', backref=db.backref('resolved_issues', lazy=True), foreign_keys=[resolved_by])
@@ -363,7 +364,8 @@ class Order(db.Model):
     invoice_data = db.Column(db.Text, nullable=False)  
     total = db.Column(db.Float, nullable=False)      
 
-    status = db.Column(db.String(20), nullable=False, default='Pending') 
+    status = db.Column(db.String(20), nullable=False, default='Pending')  # Possible: Pending, Confirmed, Cancelled
+    is_order_changed = db.Column(db.Boolean, nullable=False, default=False)  # Track if order status changed for student notification
     placed_at = db.Column(db.DateTime, nullable=False, default=datetime.now)
     completed_at = db.Column(db.DateTime, nullable=True)
     student = db.relationship(
@@ -578,8 +580,20 @@ def userprofile():
 @app.route('/homepage')
 @login_required
 def homepage():
-    new_issues_count = IssueLog.query.filter_by(is_new=True, status='Reported').count()
-    return render_template('homepage.html', new_issues_count = new_issues_count)
+    # Notification counts for staff
+    new_issues_count = IssueLog.query.filter_by(is_new=True, status='Reported').count() if current_user.is_staff else 0
+    new_orders_count = Order.query.filter_by(status='Pending').count() if current_user.is_staff else 0
+    # Notification counts for students
+    changed_issues_count = IssueLog.query.filter_by(student_id=current_user.id, is_changed=True).count() if not current_user.is_staff else 0
+    changed_orders_count = Order.query.filter_by(student_id=current_user.id, is_order_changed=True).count() if not current_user.is_staff else 0
+    merged_count = (new_issues_count + new_orders_count + changed_issues_count + changed_orders_count)
+    return render_template('homepage.html',
+        new_issues_count=new_issues_count,
+        new_orders_count=new_orders_count,
+        changed_issues_count=changed_issues_count,
+        changed_orders_count=changed_orders_count,
+        merged_count=merged_count
+    )
 
 @app.route('/registration')
 def registration():
@@ -1354,6 +1368,69 @@ def transaction_history():
     transactions = student.transactions.order_by(Transaction.date.desc()).all()
     return render_template('balance/history.html', transactions=transactions)
 
+#---------------Nur Routes in Sanjida's part---------------------
+
+# Student canteen orders view
+@app.route('/student/orders')
+@login_required
+def student_orders():
+    orders = Order.query.filter_by(student_id=current_user.id).order_by(Order.placed_at.desc()).all()
+    # Save which orders were changed before resetting
+    changed_ids = [order.id for order in orders if order.is_order_changed]
+    for order in orders:
+        if order.is_order_changed:
+            order.is_order_changed = False
+    db.session.commit()
+    # Pass a set of changed order ids to the template for 'New' badge
+    return render_template('canteen/student_orders.html', orders=orders, changed_ids=changed_ids)
+
+# Staff can update order status
+@app.route('/staff/update_order_status/<int:order_id>', methods=['POST'])
+@login_required
+def update_order_status(order_id):
+    if not current_user.is_staff:
+        #lash('Access denied. Staff only area.', 'error')
+        return redirect(url_for('homepage'))
+    order = Order.query.get_or_404(order_id)
+    new_status = request.form.get('status')
+    allowed_statuses = ['Pending', 'Confirmed', 'Cancelled']
+    if new_status not in allowed_statuses:
+        #lash('Invalid status.', 'error')
+        return redirect(url_for('staff_canteen_orders'))
+    order.status = new_status
+    order.is_order_changed = True  # Mark as changed for notification
+    if new_status == 'Confirmed':
+        order.completed_at = datetime.now()
+    elif new_status == 'Cancelled':
+        order.completed_at = datetime.now()
+    db.session.commit()
+   #flash('Order status updated.', 'success')
+    return redirect(url_for('staff_canteen_orders'))
+# Staff canteen orders management view
+@app.route('/staff/canteen_orders')
+@login_required
+def staff_canteen_orders():
+    if not current_user.is_staff:
+       #flash('Access denied. Staff only area.', 'error')
+        return redirect(url_for('homepage'))
+    orders = Order.query.order_by(Order.placed_at.desc()).all()
+    return render_template('canteen/staff_canteen_orders.html', orders=orders)
+
+# Route to show order details (invoice_data)
+@app.route('/order/<int:order_id>/details')
+@login_required
+def order_details(order_id):
+    order = Order.query.get_or_404(order_id)
+    # Only allow the student who owns the order to view
+    if order.student_id != current_user.id:
+        flash('Access denied.', 'error')
+        return redirect(url_for('student_orders'))
+    try:
+        invoice = json.loads(order.invoice_data)
+    except Exception:
+        invoice = order.invoice_data
+    return render_template('canteen/order_details.html', order=order, invoice=invoice)
+
 #---------------Nur Routes---------------------
 
 # Route to display issue logging form and list user's issues
@@ -1362,7 +1439,9 @@ def transaction_history():
 def view_issues():
     # Get all issues for the current user
     user_issues = IssueLog.query.filter_by(student_id=current_user.id).order_by(IssueLog.submitted_at.desc()).all()
-    return render_template('issues/view_issues.html', issues=user_issues)
+    # Notification count for student
+    changed_issues_count = IssueLog.query.filter_by(student_id=current_user.id, is_changed=True).count()
+    return render_template('issues/view_issues.html', issues=user_issues, changed_issues_count=changed_issues_count)
 
 # Route to create new issue
 @app.route('/log_issue', methods=['GET', 'POST'])
@@ -1383,7 +1462,7 @@ def log_issue():
         )
         db.session.add(new_issue)
         db.session.commit()
-        flash('Issue logged successfully! Our technical team will review it shortly.', 'success')
+        #lash('Issue logged successfully! Our technical team will review it shortly.', 'success')
         return redirect(url_for('view_issues'))
     return render_template('issues/log_issue.html', form=form)
 
@@ -1395,16 +1474,19 @@ def view_issue_detail(issue_id):
     
     # Ensure the user can only view their own issues
     if issue.student_id != current_user.id:
-        flash('You can only view your own issues.', 'error')
+       #flash('You can only view your own issues.', 'error')
         return redirect(url_for('view_issues'))
-    
+    # Mark as seen for student notification
+    if issue.is_changed:
+        issue.is_changed = False
+        db.session.commit()
     return render_template('issues/issue_detail.html', issue=issue)
 
 @app.route('/staff/issues')
 @login_required
 def staff_issues():
     if not current_user.is_staff:
-        flash('Access denied. Staff only area.', 'error')
+       #flash('Access denied. Staff only area.', 'error')
         return redirect(url_for('homepage'))
 
     floor = request.args.get('floor', 'ALL')
@@ -1455,8 +1537,11 @@ def update_issue_status():
         issue.resolved_by = current_user.id
     if new_status == 'On Process':
         issue.resolved_at = datetime.now()
-        issue.resolved_by = current_user.id# Mark as not new if status is updated
+        issue.resolved_by = current_user.id
+    # Mark as not new if status is updated
     issue.is_new = False
+    # Mark as changed for student notification
+    issue.is_changed = True
 
     db.session.commit()
 
@@ -1468,7 +1553,7 @@ def staff_issue_detail(issue_id):
     # Count new issues for notification
     new_issues_count = IssueLog.query.filter_by(is_new=True, status='Reported').count()
     if not current_user.is_staff:
-        flash('Access denied. Staff only area.', 'error')
+      # flash('Access denied. Staff only area.', 'error')
         return redirect(url_for('homepage'))
 
     issue = IssueLog.query.get_or_404(issue_id)
@@ -1477,6 +1562,59 @@ def staff_issue_detail(issue_id):
         issue.is_new = False
         db.session.commit()
     return render_template('issues/staff_issue_detail.html', issue=issue, new_issues_count = new_issues_count)
+
+
+# Context processor to inject notification counts into all templates
+@app.context_processor
+def inject_notification_counts():
+    if not current_user.is_authenticated:
+        return {}
+    new_issues_count = IssueLog.query.filter_by(is_new=True, status='Reported').count() if current_user.is_staff else 0
+    new_orders_count = Order.query.filter_by(status='Pending').count() if current_user.is_staff else 0
+    changed_issues_count = IssueLog.query.filter_by(student_id=current_user.id, is_changed=True).count() if not current_user.is_staff else 0
+    changed_orders_count = Order.query.filter_by(student_id=current_user.id, is_order_changed=True).count() if not current_user.is_staff else 0
+    merged_count = (new_issues_count + new_orders_count + changed_issues_count + changed_orders_count)
+    return dict(
+        new_issues_count=new_issues_count,
+        new_orders_count=new_orders_count,
+        changed_issues_count=changed_issues_count,
+        changed_orders_count=changed_orders_count,
+        merged_count=merged_count
+    )
+
+# Staff order details page
+@app.route('/staff/order/<int:order_id>/details', methods=['GET', 'POST'])
+@login_required
+def staff_order_details(order_id):
+    if not current_user.is_staff:
+       #flash('Access denied.', 'error')
+        return redirect(url_for('homepage'))
+    order = Order.query.get_or_404(order_id)
+    show_new = order.is_order_changed
+    if request.method == 'POST':
+        new_status = request.form.get('status')
+        allowed_statuses = ['Confirmed', 'Cancelled']
+        if new_status not in allowed_statuses or order.status == new_status:
+            flash('Invalid status update.', 'error')
+        elif order.status == 'Pending':
+            order.status = new_status
+            order.is_order_changed = False  # Remove 'New' badge after update
+            if new_status == 'Confirmed' or new_status == 'Cancelled':
+                order.completed_at = datetime.now()
+            db.session.commit()
+          # flash('Order status updated.', 'success')
+            show_new = False
+        return redirect(url_for('staff_order_details', order_id=order.id))
+    try:
+        invoice = json.loads(order.invoice_data)
+    except Exception:
+        invoice = order.invoice_data
+    # Remove 'New' badge and update notification count when viewing details
+    if order.is_order_changed:
+        order.is_order_changed = False
+        db.session.commit()
+        show_new = False
+    return render_template('canteen/staff_order_details.html', order=order, invoice=invoice, show_new=show_new)
 #------------------------------end-----------------------------------------
 if __name__ == '__main__':
     app.run(debug=True)   #helps us debug

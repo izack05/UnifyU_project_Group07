@@ -245,7 +245,10 @@
       </div>
     </div>
 
-    <a href="{{ url_for('canteen_home') }}" class="back-btn">Back to Canteen</a>
+    <div style="display: flex; flex-direction: row; justify-content: flex-start; align-items: center; gap: 12px; margin-top: 24px;">
+      <a href="{{ url_for('canteen_home') }}" class="back-btn" style="display: flex; align-items: center; justify-content: center; min-width: 160px; padding: 10px 0; font-weight: 500; height: 44px;">Back to Canteen</a>
+  <a href="{{ url_for('student_orders') }}" class="btn-view-order" style="display: flex; align-items: center; justify-content: center; min-width: 160px; padding: 10px 0; background: linear-gradient(90deg, #ff9800 60%, #ffb347 100%); color: #fff; text-decoration: none; border-radius: 6px; font-weight: 500; border: none; transition: 0.3s; height: 44px; margin-top: 16px;">View Order</a>
+    </div>
   </div>
 </body>
 </html>

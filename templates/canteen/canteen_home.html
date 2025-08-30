@@ -67,8 +67,8 @@
   .disabled { opacity: .6; cursor: not-allowed; }
 </style>
 
-<!-- Cart Button -->
-<div style="text-align: right; margin: 20px;">
+<!-- Cart and Orders Buttons -->
+<div style="text-align: right; margin: 20px; display: flex; gap: 10px; justify-content: flex-end; align-items: center;">
   {% if cart and total_quantity > 0 %}
     <a href="{{ url_for('cart') }}" class="btn-view-cart cart-wrapper">
       🛒 View Cart
@@ -77,6 +77,7 @@
   {% else %}
     <span class="btn-view-cart disabled">🛒 View Cart</span>
   {% endif %}
+  <a href="{{ url_for('student_orders') }}" class="btn-view-cart cart-wrapper" style="margin-left: 10px;"> View Orders</a>
 </div>
 
 <!-- Flash messages -->

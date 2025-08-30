@@ -1,3 +1,6 @@
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unifyu_custom.css') }}">
+{% endblock %}
 {% extends "layout/base.html" %}
 {% block content %}
 <div class="container mt-4">
@@ -29,23 +32,20 @@
                     <td>{{ issue.issue_category }}</td>
                     <td>{{ issue.floor }}</td>
                     <td>
-                        <span class="badge {% if issue.status == 'Reported' %}bg-danger
-                                         {% elif issue.status == 'On Process' %}bg-warning
-                                         {% else %}bg-success{% endif %}">
-                            {{ issue.status }}
-                        </span>
+                        <span class="issue-status-text modern-badge-bg">{{ issue.status }}</span>
                     </td>
                     <td>
-                        <span class="badge {% if issue.priority == 'Critical' %}bg-danger
-                                         {% elif issue.priority == 'High' %}bg-warning
-                                         {% elif issue.priority == 'Medium' %}bg-info
-                                         {% else %}bg-secondary{% endif %}">
-                            {{ issue.priority }}
-                        </span>
+                        <span class="issue-priority-text modern-badge-bg-alt">{{ issue.priority }}</span>
                     </td>
                     <td>{{ issue.submitted_at.strftime('%Y-%m-%d %H:%M') }}</td>
                     <td>
-                        <a href="{{ url_for('view_issue_detail', issue_id=issue.id) }}" class="btn btn-sm btn-info">View</a>
+                        <div style="position: relative; display: inline-block;">
+                            <a href="{{ url_for('view_issue_detail', issue_id=issue.id) }}"class="btn btn-glow btn-sm position-relative">View</a>
+                                {% if issue.is_changed %}
+                                    <span class="new-indicator-badge modern-badge" style="top: -10px; right: -10px;">New</span>
+                                {% endif %}
+                            </a>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
