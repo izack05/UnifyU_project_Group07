@@ -10,7 +10,7 @@ from flask_login import UserMixin, LoginManager, login_user, login_required, log
 
 from flask_migrate import Migrate
 
-from sk import flask_sk, ai_key, DEL_EMAIL, MAIL_PASSWORD
+from sk import flask_sk, ai_key, DEL_EMAIL, MAIL_PASSWORD, DATABASE_URL
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 #from flask_seasurf import SeaSurf
@@ -33,7 +33,10 @@ app = Flask(__name__)
 #create instance
 db = SQLAlchemy()
 # Database
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///users.db"
+# app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///users.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
+# username::password@location/database_name
+
 #Limiting the size of uploaded content to 16mb
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 #Initializing Database
