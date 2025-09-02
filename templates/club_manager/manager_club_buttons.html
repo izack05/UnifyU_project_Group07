@@ -1,0 +1,73 @@
+{% extends "layout/base.html" %}
+{% block content %}
+
+
+    <h2 class="page-header">Campus Club Actions</h2>
+
+    {% if message %}
+        <div class="alert alert-info">{{ message }}</div>
+    {% endif %}
+
+    <div class="buttons-container">
+        <a href="{{ url_for('admin_view_club') }}" class="btn btn-custom btn-primary-custom">
+            <i class="bi bi-people-fill me-2"></i> Manage Clubs
+        </a>
+        <a href="{{ url_for('addevent') }}" class="btn btn-custom btn-success-custom">
+            <i class="bi bi-bar-chart-line-fill me-2"></i> Add Club Event
+        </a>
+        <a href="{{ url_for('show_club_applications') }}" class="btn btn-custom btn-danger-custom">
+            <i class="bi bi-clipboard-check-fill me-2"></i> Club Applications
+        </a>
+    </div>
+
+    <style>
+        /* Page background */
+        body {
+            background-color: #f2f3f7;
+        }
+
+        /* Page header */
+        .page-header {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        /* Button container */
+        .buttons-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-top: 50px;
+        }
+
+        /* Custom buttons */
+        .btn-custom {
+            flex: 1 1 250px;
+            max-width: 300px;
+            padding: 18px 25px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 12px;
+            border: none;
+            color: #ece3e3;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn-primary-custom { background-color: #2c3e50; } /* navy-ish */
+        .btn-primary-custom:hover { background-color: #34495e; transform: translateY(-3px); box-shadow: 0 8px 16px rgba(0,0,0,0.25); }
+
+        .btn-success-custom { background-color: #7f8c8d; } /* ashy gray */
+        .btn-success-custom:hover { background-color: #95a5a6; transform: translateY(-3px); box-shadow: 0 8px 16px rgba(0,0,0,0.25); }
+
+        .btn-danger-custom { background-color: #34495e; } /* deep navy */
+        .btn-danger-custom:hover { background-color: #2c3e50; transform: translateY(-3px); box-shadow: 0 8px 16px rgba(0,0,0,0.25); }
+    </style>
+
+{% endblock %}

@@ -117,6 +117,7 @@ class StudentRegistration(db.Model, UserMixin):
     is_staff = db.Column(db.Boolean, default = False)
     is_admin = db.Column(db.Boolean, default = False)
     balance = db.Column(db.Integer, nullable=False, default=0)
+    is_club_manager = db.Column(db.Boolean, default = False)
     
 
     # Relationships
@@ -136,8 +137,8 @@ class StudentRegistration(db.Model, UserMixin):
 
 
 class StudentAdmin(ModelView):
-    column_list = ('id', 'full_name', 'username', 'email', 'gender', 'is_verified', 'is_staff')
-    form_columns = ('id','full_name', 'username', 'email', 'gender', 'password', 'is_verified', 'is_staff')
+    column_list = ('id', 'full_name', 'username', 'email', 'gender', 'is_verified', 'is_staff', 'is_club_manager')
+    form_columns = ('id','full_name', 'username', 'email', 'gender', 'password', 'is_verified', 'is_staff', 'is_club_manager')
     form_excluded_columns = ()
     def on_model_change(self, form, model, is_created):
         # password hashing
@@ -408,6 +409,7 @@ class MyAdminIndexView(AdminIndexView):
         total =  db.session.query(func.count(StudentRegistration.id)).scalar()
         admin_count = db.session.query(func.count(StudentRegistration.id)).filter_by(is_admin=True).scalar()
         staff_count = db.session.query(func.count(StudentRegistration.id)).filter_by(is_staff=True).scalar()
+        club_manager_count = db.session.query(func.count(StudentRegistration.id)).filter_by(is_club_manager=True).scalar()
         student_count = total - (admin_count + staff_count)
         verified_student_count = db.session.query(func.count(StudentRegistration.id)).filter_by(is_verified=True).scalar()
         unverified_student_count = db.session.query(func.count(StudentRegistration.id)).filter_by(is_verified=False).scalar()
@@ -457,6 +459,7 @@ class MyAdminIndexView(AdminIndexView):
             total = total, 
             admin_count = admin_count,
             staff_count = staff_count,
+            club_manager_count = club_manager_count,
             student_count = student_count,
             verified_students_count = verified_student_count,
             unverified_students_count = unverified_student_count,
@@ -484,7 +487,8 @@ class MyButtonsView(BaseView):
     @expose('/')
     @login_required
     def index(self):
-        return self.render('admin/club_buttons.html')
+        clubmanagers = StudentRegistration.query.filter_by(is_club_manager=True).all()
+        return self.render('admin/club_buttons.html', clubmanagers = clubmanagers)
 
     
 
@@ -796,7 +800,7 @@ def register_student(club_id):
 @app.route('/show_club_applications')
 @login_required
 def show_club_applications():
-    if not current_user.is_admin:
+    if not (current_user.is_admin or current_user.is_club_manager):
         return redirect(url_for("homepage"))
 
     applications = clubapp.query.join(clubapp.club).order_by(Club.name, clubapp.name).all()
@@ -806,7 +810,7 @@ def show_club_applications():
 @app.route('/addevent')
 @login_required
 def addevent():
-    if not (current_user.is_authenticated and current_user.is_admin):
+    if not (current_user.is_authenticated and (current_user.is_admin or current_user.is_club_manager)):
         return redirect(url_for('homepage'))
     clubs = Club.query.all()
     if not clubs:
@@ -862,7 +866,7 @@ def balance():
 @app.route('/admin/clubs')
 @login_required
 def admin_view_club():
-    if not current_user.is_admin:
+    if not (current_user.is_admin or current_user.is_club_manager):
         return redirect(url_for('homepage'))
 
     clubs = Club.query.order_by(Club.name).all()
@@ -875,7 +879,7 @@ def admin_view_club():
 @app.route('/admin/club/<int:club_id>', methods=['GET', 'POST'])
 @login_required
 def manage_club(club_id=None):
-    if not current_user.is_admin:
+    if not (current_user.is_admin or current_user.is_club_manager):
         return redirect(url_for('homepage'))
 
     club = Club.query.get(club_id) if club_id else Club()
@@ -905,7 +909,7 @@ def manage_club(club_id=None):
 @app.route('/admin/club/delete/<int:club_id>', methods=['POST'])
 @login_required
 def delete_club(club_id):
-    if not current_user.is_admin:
+    if not (current_user.is_admin or current_user.is_club_manager):
         return redirect(url_for('homepage'))
 
     club = Club.query.get_or_404(club_id)
@@ -963,12 +967,17 @@ Club: {app.club.name}
 
 
 
+#---------------------club_manager_routes-----------------------
 
+@app.route('/club_manager_view')
+@login_required
+def club_manager_view():
+    if not (current_user.is_admin or current_user.is_club_manager):
+        return redirect(url_for('homepage'))
 
+    clubs = Club.query.order_by(Club.name).all()
 
-
-
-
+    return render_template("club_manager/manager_club_buttons.html", clubs=clubs)
 
 
 #---------------Sanjida Routes-----------------
