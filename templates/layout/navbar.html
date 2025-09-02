@@ -25,13 +25,6 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNavDropdown">
       <ul class="navbar-nav ms-auto">
-        {% if current_user.is_authenticated and current_user.is_admin %}
-        
-        <li class="nav-item">
-          <a class="nav-link btn btn-outline-primary mx-1" aria-current="page" href="{{ url_for('admin.index') }}" style="color: #ece3e3">Admin Panel</a>
-        </li>
-
-        {% endif %}
 
         <li class="nav-item d-flex align-items-center" style="position: relative;">
           {% if current_user.is_authenticated %}
@@ -75,15 +68,28 @@
               });
             </script>
           {% endif %}
+        </li>
+
+        {% if current_user.is_authenticated and current_user.is_admin %}
+        
+        <li class="nav-item">
+          <a class="nav-link btn btn-outline-primary mx-1" aria-current="page" href="{{ url_for('admin.index') }}" style="color: #ece3e3">Admin Panel</a>
+        </li>
+
+        {% endif %}
+
+        <li>
           <a class="nav-link btn btn-outline-primary mx-1" aria-current="page" href="{{ url_for('homepage') }}" style="color: #ece3e3">Home</a>
         </li>
 
         <li class="nav-item">
           <a class="nav-link btn btn-outline-primary mx-1" href="#" style="color: #ece3e3">About us</a>
         </li>
-        <!-- <li class="nav-item">
-          <a class="nav-link btn btn-outline-primary mx-1" href="{{ url_for('view_issues') }}" style="color: #ece3e3">My Issues</a>
-        </li> -->
+        {% if current_user.is_authenticated and current_user.is_club_manager %}
+        <li class="nav-item">
+          <a class="nav-link btn btn-outline-primary mx-1" href="{{ url_for('club_manager_view') }}" style="color: #ece3e3">Manage Clubs</a>
+        </li>
+        {% endif %}
         {% if current_user.is_authenticated %}
         <li class="nav-item">
             <a class="nav-link btn btn-outline-primary mx-1" href="{{ url_for('balance') }}" style="color: #ece3e3">Balance</a>
