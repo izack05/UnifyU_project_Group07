@@ -186,14 +186,15 @@
         new Chart(ctxBar, {
           type: 'bar',
           data: {
-            labels: ['Students', 'Verified Students', 'Unverified Students', 'Staff(s)', 'Admin(s)'],
+            labels: ['Students', 'Verified Students', 'Unverified Students', 'Staff(s)', 'Club Manager(s)', 'Admin(s)'],
             datasets: [{
               label: 'Number of different User Types',
               data: [
                 {{ student_count }}, 
                 {{ verified_students_count }}, 
                 {{ unverified_students_count }}, 
-                {{ staff_count }}, 
+                {{ staff_count }},
+                {{ club_manager_count }}, 
                 {{ admin_count }}
               ],
               borderWidth: 1
